@@ -1,0 +1,874 @@
+@import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap");
+
+
+:root {
+    --journal-orange: #ff6b18;
+    --deep-orange: #f45113;
+    --warm-yellow: #ffd928;
+
+    --lime-green: #c7d600;
+    --bright-lime: #dceb20;
+
+    --dark-brown: #352a23;
+    --warm-white: #fff8e8;
+    --cream-orange: #ffe4c2;
+
+    --soft-cream: #fff3d6;
+}
+
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: "Baloo 2", sans-serif;
+    background: var(--warm-white);
+    color: var(--dark-brown);
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.hero {
+    position: relative;
+
+    min-height: 100vh;
+
+    overflow: hidden;
+
+    /*
+    IMPORTANT:
+    Images are inside public/images/
+  */
+
+    background-image:
+        linear-gradient(90deg,
+            rgba(255, 248, 232, 0.78) 0%,
+            rgba(255, 248, 232, 0.50) 42%,
+            rgba(255, 248, 232, 0.18) 100%),
+        url("/images/journal-hero.png");
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+
+.hackclub-badge {
+    position: absolute;
+
+    top: 22px;
+    left: 35px;
+
+    width: 190px;
+
+    z-index: 50;
+
+    display: block;
+
+    transition:
+        transform 0.25s ease,
+        filter 0.25s ease;
+}
+
+.hackclub-badge img {
+    width: 100%;
+    height: auto;
+
+    display: block;
+}
+
+.hackclub-badge:hover {
+    transform: rotate(-2deg) scale(1.04);
+    filter: brightness(1.05);
+}
+
+
+
+.navbar {
+    position: absolute;
+
+    top: 30px;
+    right: 45px;
+
+    z-index: 40;
+}
+
+.nav-links {
+    display: flex;
+    gap: 42px;
+}
+
+.nav-links a {
+    font-size: 27px;
+    font-weight: 700;
+
+    color: var(--dark-brown);
+
+    transition:
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.nav-links a:hover {
+    color: var(--deep-orange);
+    transform: translateY(-2px);
+}
+
+.hero-content {
+    min-height: 100vh;
+
+    display: flex;
+    align-items: center;
+
+    padding:
+        150px 8% 90px;
+}
+
+.hero-text {
+    max-width: 680px;
+}
+
+
+/* Small heading */
+
+.eyebrow {
+    font-size: 23px;
+
+    font-weight: 700;
+
+    color: var(--deep-orange);
+
+    margin-bottom: 15px;
+}
+
+
+/* Main heading */
+
+.hero h1 {
+    color: var(--dark-brown);
+
+    font-size: clamp(55px,
+            7vw,
+            100px);
+
+    line-height: 0.92;
+
+    font-weight: 800;
+
+    margin-bottom: 30px;
+
+    letter-spacing: -2px;
+}
+
+
+/* Description */
+
+.hero-description {
+    max-width: 620px;
+
+    color: #493b31;
+
+    font-size: 21px;
+
+    line-height: 1.4;
+
+    margin-bottom: 35px;
+
+    font-weight: 500;
+}
+
+
+.signup-box {
+    width: min(670px,
+            100%);
+
+    display: flex;
+
+    align-items: center;
+
+    padding:
+        8px 9px 8px 25px;
+
+    background:
+        rgba(255,
+            248,
+            232,
+            0.94);
+
+    border-radius: 45px;
+
+    box-shadow:
+        0 12px 35px rgba(53,
+            42,
+            35,
+            0.14);
+
+    backdrop-filter: blur(10px);
+}
+
+.signup-box input {
+    flex: 1;
+
+    min-width: 0;
+
+    border: none;
+    outline: none;
+
+    background: transparent;
+
+    font-family: inherit;
+
+    font-size: 20px;
+
+    font-weight: 600;
+
+    color: var(--dark-brown);
+}
+
+.signup-box input::placeholder {
+    color: var(--deep-orange);
+
+    opacity: 1;
+}
+
+.signup-box button {
+    border: none;
+
+    background: var(--deep-orange);
+
+    color: var(--warm-white);
+
+    padding:
+        15px 32px;
+
+    border-radius: 35px;
+
+    font-family: inherit;
+
+    font-size: 21px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+}
+
+.signup-box button:hover {
+    background: var(--journal-orange);
+
+    transform: scale(1.03);
+}
+
+
+.about-section {
+    position: relative;
+
+    padding:
+        150px 8%;
+
+    background-image:
+        linear-gradient(90deg,
+            rgba(255, 248, 232, 0.72),
+            rgba(255, 248, 232, 0.42)),
+        url("/images/journal-about.png");
+
+    background-size: cover;
+
+    background-position: center;
+
+    background-repeat: no-repeat;
+}
+
+.about-content {
+    max-width: 1200px;
+
+    margin: auto;
+
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 80px;
+
+    align-items: center;
+}
+
+
+/* About text */
+
+.section-label {
+    color: var(--deep-orange);
+
+    font-size: 18px;
+
+    font-weight: 800;
+
+    letter-spacing: 2px;
+
+    margin-bottom: 15px;
+}
+
+.about-text h2 {
+    font-size: clamp(45px,
+            5vw,
+            72px);
+
+    line-height: 0.95;
+
+    color: var(--dark-brown);
+
+    margin-bottom: 30px;
+}
+
+.about-text p:not(.section-label) {
+    max-width: 580px;
+
+    font-size: 20px;
+
+    line-height: 1.5;
+
+    color: #493b31;
+
+    margin-bottom: 20px;
+}
+
+
+
+.about-book {
+    display: flex;
+
+    justify-content: center;
+}
+
+.book-card {
+    position: relative;
+
+    width: 380px;
+    height: 470px;
+
+    padding:
+        60px 40px;
+
+    border-radius: 20px;
+
+    background:
+        linear-gradient(135deg,
+            #fff8e8,
+            #ffe4c2);
+
+    box-shadow:
+        15px 18px 0 rgba(53,
+            42,
+            35,
+            0.15),
+
+        0 25px 50px rgba(53,
+            42,
+            35,
+            0.12);
+
+    transform: rotate(3deg);
+}
+
+.book-decoration {
+    position: absolute;
+
+    top: 25px;
+    right: 30px;
+
+    font-size: 28px;
+
+    color: var(--journal-orange);
+}
+
+.book-title {
+    font-size: 55px;
+
+    font-weight: 800;
+
+    color: var(--journal-orange);
+
+    text-align: center;
+
+    margin-top: 100px;
+}
+
+.book-small {
+    text-align: center;
+
+    color: var(--dark-brown);
+
+    font-size: 18px;
+
+    margin-top: 10px;
+}
+
+.book-lines {
+    position: absolute;
+
+    left: 40px;
+    right: 40px;
+
+    bottom: 100px;
+
+    height: 2px;
+
+    background:
+        rgba(53,
+            42,
+            35,
+            0.15);
+
+    box-shadow:
+        0 25px rgba(53,
+            42,
+            35,
+            0.15),
+
+        0 50px rgba(53,
+            42,
+            35,
+            0.15);
+}
+
+
+/* =========================================================
+   JOURNEY
+========================================================= */
+
+.journey-section {
+    padding:
+        140px 8%;
+
+    background:
+        linear-gradient(180deg,
+            var(--warm-white),
+            #fff2c9);
+}
+
+.journey-content {
+    max-width: 1200px;
+
+    margin: auto;
+
+    text-align: center;
+}
+
+.journey-content h2 {
+    font-size: clamp(45px,
+            5vw,
+            70px);
+
+    color: var(--dark-brown);
+
+    line-height: 1;
+
+    margin-bottom: 70px;
+}
+
+.journey-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4,
+            1fr);
+
+    gap: 25px;
+}
+
+.journey-card {
+    padding:
+        35px 25px;
+
+    min-height: 230px;
+
+    background:
+        rgba(255,
+            228,
+            194,
+            0.85);
+
+    border-radius: 25px;
+
+    text-align: left;
+
+    border:
+        3px solid rgba(255,
+            107,
+            24,
+            0.15);
+
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.journey-card:hover {
+    transform:
+        translateY(-8px);
+
+    box-shadow:
+        0 15px 30px rgba(53,
+            42,
+            35,
+            0.1);
+}
+
+.number {
+    color: var(--journal-orange);
+
+    font-size: 18px;
+
+    font-weight: 800;
+}
+
+.journey-card h3 {
+    font-size: 30px;
+
+    color: var(--dark-brown);
+
+    margin:
+        20px 0 10px;
+}
+
+.journey-card p {
+    font-size: 18px;
+
+    color: #493b31;
+
+    line-height: 1.4;
+}
+
+
+
+.faq-section {
+    padding:
+        130px 8%;
+
+    background:
+        var(--warm-white);
+}
+
+.faq-content {
+    max-width: 950px;
+
+    margin: auto;
+}
+
+.faq-content h2 {
+    font-size: clamp(50px,
+            6vw,
+            75px);
+
+    margin-bottom: 50px;
+}
+
+.faq-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 15px;
+}
+
+.faq-list details {
+    padding:
+        25px 30px;
+
+    border-radius: 20px;
+
+    background:
+        var(--cream-orange);
+}
+
+.faq-list summary {
+    cursor: pointer;
+
+    font-size: 23px;
+
+    font-weight: 700;
+
+    color: var(--dark-brown);
+}
+
+.faq-list details p {
+    margin-top: 15px;
+
+    font-size: 18px;
+
+    line-height: 1.5;
+
+    color: #493b31;
+}
+
+
+.footer {
+    position: relative;
+
+    padding:
+        100px 8%;
+
+    overflow: hidden;
+
+    background-image:
+        linear-gradient(180deg,
+            rgba(199, 214, 0, 0.88),
+            rgba(184, 200, 0, 0.94)),
+        url("/images/journal-footer.png");
+
+    background-size: cover;
+
+    background-position: center;
+
+    background-repeat: no-repeat;
+}
+
+.footer-inner {
+    max-width: 1250px;
+
+    margin: auto;
+
+    display: grid;
+
+    grid-template-columns:
+        0.8fr 1.6fr;
+
+    gap: 100px;
+}
+
+
+/* Footer logo */
+
+.footer-brand {
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-start;
+}
+
+.footer-hackclub {
+    width: 190px;
+
+    display: block;
+
+    margin-bottom: 30px;
+
+    transition:
+        transform 0.2s ease;
+}
+
+.footer-hackclub img {
+    width: 100%;
+
+    height: auto;
+
+    display: block;
+}
+
+.footer-hackclub:hover {
+    transform: rotate(-2deg) scale(1.03);
+}
+
+
+/* Footer links */
+
+.footer-links {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+.footer-links a {
+    color: var(--warm-white);
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+    transition:
+        transform 0.2s ease;
+}
+
+.footer-links a:hover {
+    transform:
+        translateX(5px);
+}
+
+
+/* Footer text */
+
+.footer-text {
+    color: var(--warm-white);
+
+    font-size: 17px;
+
+    line-height: 1.45;
+}
+
+.footer-text p {
+    margin-bottom: 25px;
+}
+
+.footer-text a {
+    color: var(--warm-white);
+
+    text-decoration: underline;
+
+    font-weight: 700;
+}
+
+
+@media (max-width: 850px) {
+
+    /* Badge */
+
+    .hackclub-badge {
+        width: 135px;
+
+        top: 20px;
+        left: 20px;
+    }
+
+
+    /* Navbar */
+
+    .navbar {
+        top: 25px;
+        right: 20px;
+    }
+
+    .nav-links {
+        gap: 15px;
+    }
+
+    .nav-links a {
+        font-size: 19px;
+    }
+
+
+    /* Hero */
+
+    .hero {
+        background-position:
+            62% center;
+    }
+
+    .hero-content {
+        padding:
+            180px 25px 70px;
+    }
+
+    .hero-text {
+        max-width: 100%;
+    }
+
+    .hero h1 {
+        font-size: 58px;
+
+        letter-spacing: -1px;
+    }
+
+    .hero-description {
+        font-size: 18px;
+    }
+
+
+    /* Signup */
+
+    .signup-box {
+        padding-left: 18px;
+    }
+
+    .signup-box input {
+        min-width: 0;
+
+        font-size: 16px;
+    }
+
+    .signup-box button {
+        padding:
+            13px 20px;
+
+        font-size: 17px;
+    }
+
+
+    /* About */
+
+    .about-section {
+        padding:
+            100px 25px;
+    }
+
+    .about-content {
+        grid-template-columns: 1fr;
+
+        gap: 60px;
+    }
+
+    .about-book {
+        order: -1;
+    }
+
+    .book-card {
+        width: 300px;
+
+        height: 380px;
+    }
+
+    .book-title {
+        font-size: 43px;
+    }
+
+
+    /* Journey */
+
+    .journey-section {
+        padding:
+            100px 25px;
+    }
+
+    .journey-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    /* FAQ */
+
+    .faq-section {
+        padding:
+            90px 25px;
+    }
+
+
+    /* Footer */
+
+    .footer {
+        padding:
+            80px 25px;
+    }
+
+    .footer-inner {
+        grid-template-columns: 1fr;
+
+        gap: 50px;
+    }
+
+}
