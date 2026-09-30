@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -67,6 +68,12 @@ export default function Home() {
                         </form>
 
                     </div>
+                    <div className="hero-logo">
+                        <img
+                            src="/images/logo-bg.png"
+                            alt="Journal Logo"
+                        />
+                    </div>
 
                 </div>
             </section>
@@ -103,26 +110,11 @@ export default function Home() {
 
                     </div>
 
-                    <div className="about-book">
-
-                        <div className="book-card">
-
-                            <div className="book-decoration">
-                                ✦
-                            </div>
-
-                            <div className="book-title">
-                                Journal
-                            </div>
-
-                            <div className="book-small">
-                                Ideas...Projects...Memories
-                            </div>
-
-                            <div className="book-lines"></div>
-
-                        </div>
-
+                    <div className="about-image">
+                        <img
+                            src="/images/about.png"
+                            alt="About The Journal"
+                        />
                     </div>
 
                 </div>
