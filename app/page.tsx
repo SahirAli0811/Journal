@@ -54,7 +54,10 @@ export default function Home() {
                         <form
                             className="signup-box"
                             id="signup"
-                            onSubmit={(e) => e.preventDefault()}
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                window.location.href = "/auth/hackatime";
+                            }}
                         >
                             <input
                                 type="email"
