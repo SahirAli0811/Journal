@@ -17,15 +17,15 @@
    ========================================================= */
 
 .jd-dashboard {
-  min-height: 100vh;
-  width: 100%;
+    min-height: 100vh;
+    width: 100%;
 
-  display: flex;
+    display: flex;
 
-  background: #17120f;
-  color: #fff8e8;
+    background: #17120f;
+    color: #fff8e8;
 
-  font-family: "Baloo 2", sans-serif;
+    font-family: "Baloo 2", sans-serif;
 }
 
 /* =========================================================
@@ -33,112 +33,112 @@
    ========================================================= */
 
 .jd-sidebar {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
 
-  width: 184px;
+    width: 184px;
 
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 
-  padding: 17px 10px;
+    padding: 17px 10px;
 
-  background: #120f0d;
-  border-right: 1px solid rgba(255, 248, 232, 0.07);
+    background: #120f0d;
+    border-right: 1px solid rgba(255, 248, 232, 0.07);
 
-  z-index: 20;
+    z-index: 20;
 }
 
 /* BRAND */
 
 .jd-brand {
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 
-  gap: 9px;
+    gap: 9px;
 
-  padding: 0 5px 21px;
+    padding: 0 5px 21px;
 
-  color: #fff8e8;
+    color: #fff8e8;
 
-  font-size: 14px;
-  font-weight: 800;
+    font-size: 14px;
+    font-weight: 800;
 }
 
 .jd-brand-icon {
-  width: 27px;
-  height: 27px;
+    width: 27px;
+    height: 27px;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-  border-radius: 7px;
+    border-radius: 7px;
 
-  background: rgba(255, 107, 24, 0.08);
-  border: 1px solid rgba(255, 107, 24, 0.25);
+    background: rgba(255, 107, 24, 0.08);
+    border: 1px solid rgba(255, 107, 24, 0.25);
 
-  color: #ff6b18;
+    color: #ff6b18;
 }
 
 /* NAVIGATION */
 
 .jd-nav {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 
-  gap: 4px;
+    gap: 4px;
 }
 
 .jd-nav-item {
-  height: 34px;
+    height: 34px;
 
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 
-  gap: 9px;
+    gap: 9px;
 
-  padding: 0 9px;
+    padding: 0 9px;
 
-  border-radius: 7px;
+    border-radius: 7px;
 
-  color: #978981;
-  text-decoration: none;
+    color: #978981;
+    text-decoration: none;
 
-  font-size: 10px;
-  font-weight: 700;
+    font-size: 10px;
+    font-weight: 700;
 
-  transition:
-    background 0.15s ease,
-    color 0.15s ease;
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
 }
 
 .jd-nav-item svg {
-  flex-shrink: 0;
+    flex-shrink: 0;
 }
 
 .jd-nav-item:hover {
-  color: #fff8e8;
+    color: #fff8e8;
 
-  background: rgba(255, 107, 24, 0.08);
+    background: rgba(255, 107, 24, 0.08);
 }
 
 .jd-nav-active {
-  color: #fff8e8;
+    color: #fff8e8;
 
-  background: rgba(255, 107, 24, 0.16);
+    background: rgba(255, 107, 24, 0.16);
 }
 
 .jd-nav-active svg {
-  color: #ff6b18;
+    color: #ff6b18;
 }
 
 /* SPACER */
 
 .jd-sidebar-spacer {
-  flex: 1;
+    flex: 1;
 }
 
 /* =========================================================
@@ -146,112 +146,135 @@
    ========================================================= */
 
 .jd-profile {
-  min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 
-  display: flex;
-  align-items: center;
+    min-width: 0;
+    width: 100%;
 
-  gap: 9px;
+    padding: 9px;
 
-  padding: 9px 5px;
+    color: var(--jd-text);
 
-  border-top: 1px solid rgba(255, 248, 232, 0.07);
+    text-decoration: none;
 
-  color: inherit;
-  text-decoration: none;
+    border-radius: 8px;
 
-  transition: background 0.15s ease;
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
 }
 
 .jd-profile:hover {
-  background: rgba(255, 107, 24, 0.05);
-
-  border-radius: 7px;
-}
-
-.jd-profile-avatar,
-.jd-profile-placeholder {
-  width: 32px;
-  height: 32px;
-
-  flex: 0 0 32px;
-
-  border-radius: 50%;
+    background: rgba(255, 255, 255, 0.045);
 }
 
 .jd-profile-avatar {
-  display: block;
+    width: 30px;
+    height: 30px;
 
-  object-fit: cover;
+    flex-shrink: 0;
 
-  background: #28201b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #272127;
+    color: var(--jd-text-soft);
+
+    border: 1px solid var(--jd-border);
+
+    object-fit: cover;
 }
 
 .jd-profile-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    width: 30px;
+    height: 30px;
 
-  background: #28201b;
-  border: 1px solid #3a2d26;
+    flex-shrink: 0;
 
-  color: #95877d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #272127;
+    color: var(--jd-text-soft);
+
+    border: 1px solid var(--jd-border);
 }
 
 .jd-profile-info {
-  min-width: 0;
+    min-width: 0;
+    flex: 1;
 
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 
-  gap: 1px;
+    gap: 2px;
+
+    overflow: hidden;
 }
 
 .jd-profile-info strong {
-  overflow: hidden;
+    display: block;
 
-  color: #fff8e8;
+    min-width: 0;
 
-  font-size: 9px;
-  font-weight: 800;
+    overflow: hidden;
 
-  white-space: nowrap;
-  text-overflow: ellipsis;
+    color: var(--jd-text);
+
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.25;
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .jd-profile-info span {
-  overflow: hidden;
+    display: block;
 
-  color: #756960;
+    min-width: 0;
 
-  font-size: 7px;
+    overflow: hidden;
 
-  white-space: nowrap;
-  text-overflow: ellipsis;
+    color: var(--jd-text-muted);
+
+    font-size: 8px;
+    line-height: 1.25;
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 /* LOGOUT */
 
 .jd-logout {
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 
-  gap: 8px;
+    gap: 8px;
 
-  padding: 8px 5px;
+    padding: 8px 5px;
 
-  color: #6f625a;
+    color: #6f625a;
 
-  text-decoration: none;
+    text-decoration: none;
 
-  font-size: 9px;
-  font-weight: 700;
+    font-size: 9px;
+    font-weight: 700;
 
-  transition: color 0.15s ease;
+    transition: color 0.15s ease;
 }
 
 .jd-logout:hover {
-  color: #ff6b18;
+    color: #ff6b18;
 }
 
 /* =========================================================
@@ -259,12 +282,12 @@
    ========================================================= */
 
 .jd-main {
-  width: calc(100% - 184px);
-  min-height: 100vh;
+    width: calc(100% - 184px);
+    min-height: 100vh;
 
-  margin-left: 184px;
+    margin-left: 184px;
 
-  padding: 23px 30px 38px;
+    padding: 23px 30px 38px;
 }
 
 /* =========================================================
@@ -272,112 +295,112 @@
    ========================================================= */
 
 .jd-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
 
-  gap: 20px;
+    gap: 20px;
 
-  margin-bottom: 21px;
+    margin-bottom: 21px;
 }
 
 .jd-eyebrow {
-  margin: 0 0 6px;
+    margin: 0 0 6px;
 
-  color: #ff6b18;
+    color: #ff6b18;
 
-  font-size: 7px;
-  font-weight: 900;
+    font-size: 7px;
+    font-weight: 900;
 
-  letter-spacing: 1.35px;
-  text-transform: uppercase;
+    letter-spacing: 1.35px;
+    text-transform: uppercase;
 }
 
 .jd-header h1 {
-  margin: 0;
+    margin: 0;
 
-  color: #fff8e8;
+    color: #fff8e8;
 
-  font-size: clamp(28px, 3vw, 39px);
-  line-height: 1.02;
+    font-size: clamp(28px, 3vw, 39px);
+    line-height: 1.02;
 
-  font-weight: 800;
+    font-weight: 800;
 
-  letter-spacing: -1.5px;
+    letter-spacing: -1.5px;
 }
 
 .jd-header h1 span {
-  color: #ff6b18;
+    color: #ff6b18;
 }
 
 .jd-description {
-  max-width: 600px;
+    max-width: 600px;
 
-  margin: 7px 0 0;
+    margin: 7px 0 0;
 
-  color: #87786f;
+    color: #87786f;
 
-  font-size: 9px;
-  line-height: 1.45;
+    font-size: 9px;
+    line-height: 1.45;
 }
 
 /* REFRESH */
 
 .jd-refresh {
-  flex-shrink: 0;
+    flex-shrink: 0;
 
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 
-  gap: 6px;
+    gap: 6px;
 
-  height: 28px;
+    height: 28px;
 
-  padding: 0 11px;
+    padding: 0 11px;
 
-  border: 1px solid rgba(255, 107, 24, 0.3);
-  border-radius: 6px;
+    border: 1px solid rgba(255, 107, 24, 0.3);
+    border-radius: 6px;
 
-  background: rgba(255, 107, 24, 0.05);
+    background: rgba(255, 107, 24, 0.05);
 
-  color: #ff6b18;
+    color: #ff6b18;
 
-  font-family: inherit;
-  font-size: 8px;
-  font-weight: 800;
+    font-family: inherit;
+    font-size: 8px;
+    font-weight: 800;
 
-  cursor: pointer;
+    cursor: pointer;
 
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease;
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
 }
 
 .jd-refresh:hover {
-  background: rgba(255, 107, 24, 0.1);
+    background: rgba(255, 107, 24, 0.1);
 
-  border-color: rgba(255, 107, 24, 0.45);
+    border-color: rgba(255, 107, 24, 0.45);
 }
 
 .jd-refresh:disabled {
-  opacity: 0.5;
+    opacity: 0.5;
 
-  cursor: default;
+    cursor: default;
 }
 
 .jd-spin {
-  animation: jd-spin 0.8s linear infinite;
+    animation: jd-spin 0.8s linear infinite;
 }
 
 @keyframes jd-spin {
-  from {
-    transform: rotate(0deg);
-  }
+    from {
+        transform: rotate(0deg);
+    }
 
-  to {
-    transform: rotate(360deg);
-  }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* =========================================================
@@ -385,48 +408,48 @@
    ========================================================= */
 
 .jd-error {
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 
-  gap: 12px;
+    gap: 12px;
 
-  margin-bottom: 12px;
-  padding: 10px 12px;
+    margin-bottom: 12px;
+    padding: 10px 12px;
 
-  border: 1px solid rgba(255, 89, 53, 0.25);
-  border-radius: 7px;
+    border: 1px solid rgba(255, 89, 53, 0.25);
+    border-radius: 7px;
 
-  background: rgba(255, 89, 53, 0.05);
+    background: rgba(255, 89, 53, 0.05);
 }
 
 .jd-error strong {
-  color: #ff7b58;
+    color: #ff7b58;
 
-  font-size: 9px;
+    font-size: 9px;
 }
 
 .jd-error span {
-  flex: 1;
+    flex: 1;
 
-  color: #a68f83;
+    color: #a68f83;
 
-  font-size: 8px;
+    font-size: 8px;
 }
 
 .jd-error button {
-  padding: 0;
+    padding: 0;
 
-  border: 0;
+    border: 0;
 
-  background: none;
+    background: none;
 
-  color: #ff6b18;
+    color: #ff6b18;
 
-  font-family: inherit;
-  font-size: 8px;
-  font-weight: 800;
+    font-family: inherit;
+    font-size: 8px;
+    font-weight: 800;
 
-  cursor: pointer;
+    cursor: pointer;
 }
 
 /* =========================================================
@@ -434,114 +457,114 @@
    ========================================================= */
 
 .jd-filters {
-  display: grid;
+    display: grid;
 
-  grid-template-columns:
-    repeat(3, minmax(0, 1fr));
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
 
-  gap: 9px;
+    gap: 9px;
 
-  margin-bottom: 11px;
+    margin-bottom: 11px;
 }
 
 .jd-filter {
-  min-width: 0;
+    min-width: 0;
 
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 
-  gap: 4px;
+    gap: 4px;
 }
 
 .jd-filter-label {
-  color: #665850;
+    color: #665850;
 
-  font-size: 6px;
-  font-weight: 900;
+    font-size: 6px;
+    font-weight: 900;
 
-  letter-spacing: 1px;
-  text-transform: uppercase;
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
 
 .jd-filter-control {
-  position: relative;
+    position: relative;
 
-  min-width: 0;
-  height: 34px;
+    min-width: 0;
+    height: 34px;
 
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 
-  border: 1px solid #382b24;
-  border-radius: 7px;
+    border: 1px solid #382b24;
+    border-radius: 7px;
 
-  background: #1d1714;
+    background: #1d1714;
 
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease;
+    transition:
+        border-color 0.15s ease,
+        background 0.15s ease;
 }
 
 .jd-filter-control:hover {
-  background: #201915;
+    background: #201915;
 
-  border-color: #48352c;
+    border-color: #48352c;
 }
 
 .jd-filter-control:focus-within {
-  border-color: #ff6b18;
+    border-color: #ff6b18;
 }
 
 .jd-filter-icon {
-  width: 32px;
+    width: 32px;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-  flex-shrink: 0;
+    flex-shrink: 0;
 
-  color: #ff6b18;
+    color: #ff6b18;
 }
 
 .jd-filter select {
-  min-width: 0;
+    min-width: 0;
 
-  width: 100%;
-  height: 100%;
+    width: 100%;
+    height: 100%;
 
-  appearance: none;
+    appearance: none;
 
-  padding: 0 30px 0 0;
+    padding: 0 30px 0 0;
 
-  border: 0;
-  outline: 0;
+    border: 0;
+    outline: 0;
 
-  background: transparent;
+    background: transparent;
 
-  color: #dfd2c8;
+    color: #dfd2c8;
 
-  font-family: inherit;
-  font-size: 9px;
-  font-weight: 600;
+    font-family: inherit;
+    font-size: 9px;
+    font-weight: 600;
 
-  cursor: pointer;
+    cursor: pointer;
 }
 
 .jd-filter select option {
-  background: #1d1714;
+    background: #1d1714;
 
-  color: #fff8e8;
+    color: #fff8e8;
 }
 
 .jd-filter-chevron {
-  position: absolute;
+    position: absolute;
 
-  right: 9px;
+    right: 9px;
 
-  pointer-events: none;
+    pointer-events: none;
 
-  color: #74665e;
+    color: #74665e;
 }
 
 /* =========================================================
@@ -549,91 +572,91 @@
    ========================================================= */
 
 .jd-stats {
-  display: grid;
+    display: grid;
 
-  grid-template-columns:
-    repeat(4, minmax(0, 1fr));
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
 
-  gap: 8px;
+    gap: 8px;
 
-  margin-bottom: 10px;
+    margin-bottom: 10px;
 }
 
 .jd-stat-card {
-  min-width: 0;
-  min-height: 76px;
+    min-width: 0;
+    min-height: 76px;
 
-  padding: 10px 11px;
+    padding: 10px 11px;
 
-  border: 1px solid #382b24;
-  border-radius: 7px;
+    border: 1px solid #382b24;
+    border-radius: 7px;
 
-  background: #1d1714;
+    background: #1d1714;
 
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease;
+    transition:
+        border-color 0.15s ease,
+        background 0.15s ease;
 }
 
 .jd-stat-card:hover {
-  border-color: #49362d;
+    border-color: #49362d;
 
-  background: #201915;
+    background: #201915;
 }
 
 .jd-stat-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
-  margin-bottom: 7px;
+    margin-bottom: 7px;
 }
 
-.jd-stat-top > span {
-  color: #695b53;
+.jd-stat-top>span {
+    color: #695b53;
 
-  font-size: 6px;
-  font-weight: 900;
+    font-size: 6px;
+    font-weight: 900;
 
-  letter-spacing: 1px;
-  text-transform: uppercase;
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
 
 .jd-stat-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-  color: #ff6b18;
+    color: #ff6b18;
 }
 
 .jd-stat-card strong {
-  display: block;
+    display: block;
 
-  min-width: 0;
+    min-width: 0;
 
-  overflow: hidden;
+    overflow: hidden;
 
-  color: #fff8e8;
+    color: #fff8e8;
 
-  font-size: 16px;
-  line-height: 1.1;
+    font-size: 16px;
+    line-height: 1.1;
 
-  font-weight: 900;
+    font-weight: 900;
 
-  white-space: nowrap;
-  text-overflow: ellipsis;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .jd-stat-card small {
-  display: block;
+    display: block;
 
-  margin-top: 4px;
+    margin-top: 4px;
 
-  color: #756960;
+    color: #756960;
 
-  font-size: 7px;
-  line-height: 1.2;
+    font-size: 7px;
+    line-height: 1.2;
 }
 
 /* =========================================================
@@ -641,26 +664,25 @@
    ========================================================= */
 
 .jd-data-grid {
-  display: grid;
+    display: grid;
 
-  grid-template-columns:
-    minmax(0, 1.65fr)
-    minmax(280px, 0.9fr);
+    grid-template-columns:
+        minmax(0, 1.65fr) minmax(280px, 0.9fr);
 
-  gap: 9px;
+    gap: 9px;
 
-  width: 100%;
+    width: 100%;
 }
 
 .jd-panel {
-  min-width: 0;
+    min-width: 0;
 
-  padding: 13px;
+    padding: 13px;
 
-  border: 1px solid #382b24;
-  border-radius: 7px;
+    border: 1px solid #382b24;
+    border-radius: 7px;
 
-  background: #1d1714;
+    background: #1d1714;
 }
 
 /* =========================================================
@@ -668,61 +690,61 @@
    ========================================================= */
 
 .jd-panel-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
 
-  gap: 15px;
+    gap: 15px;
 
-  margin-bottom: 15px;
+    margin-bottom: 15px;
 }
 
 .jd-panel-header p {
-  margin: 0 0 3px;
+    margin: 0 0 3px;
 
-  color: #ff6b18;
+    color: #ff6b18;
 
-  font-size: 6px;
-  font-weight: 900;
+    font-size: 6px;
+    font-weight: 900;
 
-  letter-spacing: 1px;
-  text-transform: uppercase;
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
 
 .jd-panel-header h2 {
-  margin: 0;
+    margin: 0;
 
-  color: #fff8e8;
+    color: #fff8e8;
 
-  font-size: 13px;
-  line-height: 1.1;
+    font-size: 13px;
+    line-height: 1.1;
 
-  font-weight: 800;
+    font-weight: 800;
 }
 
-.jd-panel-header > span {
-  flex-shrink: 0;
+.jd-panel-header>span {
+    flex-shrink: 0;
 
-  color: #665850;
+    color: #665850;
 
-  font-size: 7px;
+    font-size: 7px;
 }
 
 /* CODE ICON */
 
 .jd-panel-code {
-  width: 25px;
-  height: 25px;
+    width: 25px;
+    height: 25px;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-  border-radius: 6px;
+    border-radius: 6px;
 
-  background: rgba(255, 107, 24, 0.07);
+    background: rgba(255, 107, 24, 0.07);
 
-  color: #ff6b18;
+    color: #ff6b18;
 }
 
 /* =========================================================
@@ -730,72 +752,70 @@
    ========================================================= */
 
 .jd-project-list {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 
-  gap: 8px;
+    gap: 8px;
 }
 
 .jd-project-row {
-  min-width: 0;
+    min-width: 0;
 
-  display: grid;
+    display: grid;
 
-  grid-template-columns:
-    103px
-    minmax(60px, 1fr)
-    42px;
+    grid-template-columns:
+        103px minmax(60px, 1fr) 42px;
 
-  align-items: center;
+    align-items: center;
 
-  gap: 8px;
+    gap: 8px;
 }
 
 .jd-project-name {
-  min-width: 0;
+    min-width: 0;
 
-  overflow: hidden;
+    overflow: hidden;
 
-  color: #d6c8bd;
+    color: #d6c8bd;
 
-  font-size: 8px;
-  font-weight: 600;
+    font-size: 8px;
+    font-weight: 600;
 
-  white-space: nowrap;
-  text-overflow: ellipsis;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .jd-bar {
-  width: 100%;
-  height: 6px;
+    width: 100%;
+    height: 6px;
 
-  overflow: hidden;
+    overflow: hidden;
 
-  border-radius: 99px;
+    border-radius: 99px;
 
-  background: #332821;
+    background: #332821;
 }
 
 .jd-bar-fill {
-  height: 100%;
-  min-width: 2px;
+    height: 100%;
+    min-width: 2px;
 
-  border-radius: inherit;
+    border-radius: inherit;
 
-  background: #ff6b18;
+    background: #ff6b18;
 
-  transition: width 0.25s ease;
+    transition: width 0.25s ease;
 }
 
 .jd-project-time {
-  color: #9a867b;
+    color: #9a867b;
 
-  font-size: 7px;
-  font-weight: 600;
+    font-size: 7px;
+    font-weight: 600;
 
-  text-align: right;
+    text-align: right;
 
-  white-space: nowrap;
+    white-space: nowrap;
 }
 
 /* =========================================================
@@ -803,76 +823,72 @@
    ========================================================= */
 
 .jd-language-list {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 
-  gap: 10px;
+    gap: 10px;
 }
 
 .jd-language-row {
-  min-width: 0;
+    min-width: 0;
 
-  display: grid;
+    display: grid;
 
-  grid-template-columns:
-    70px
-    minmax(60px, 1fr)
-    42px;
+    grid-template-columns:
+        70px minmax(60px, 1fr) 42px;
 
-  align-items: center;
+    align-items: center;
 
-  gap: 8px;
+    gap: 8px;
 }
 
-.jd-language-row > span {
-  min-width: 0;
+.jd-language-row>span {
+    min-width: 0;
 
-  overflow: hidden;
+    overflow: hidden;
 
-  color: #d6c8bd;
+    color: #d6c8bd;
 
-  font-size: 8px;
-  font-weight: 600;
+    font-size: 8px;
+    font-weight: 600;
 
-  white-space: nowrap;
-  text-overflow: ellipsis;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .jd-language-bar {
-  width: 100%;
-  height: 6px;
+    width: 100%;
+    height: 6px;
 
-  overflow: hidden;
+    overflow: hidden;
 
-  border-radius: 99px;
+    border-radius: 99px;
 
-  background: #332821;
+    background: #332821;
 }
 
-.jd-language-bar > div {
-  height: 100%;
-  min-width: 2px;
+.jd-language-bar>div {
+    height: 100%;
+    min-width: 2px;
 
-  border-radius: inherit;
+    border-radius: inherit;
 
-  background: linear-gradient(
-    90deg,
-    #ffd928 0%,
-    #ff6b18 100%
-  );
+    background: linear-gradient(90deg,
+            #ffd928 0%,
+            #ff6b18 100%);
 
-  transition: width 0.25s ease;
+    transition: width 0.25s ease;
 }
 
 .jd-language-row strong {
-  color: #9a867b;
+    color: #9a867b;
 
-  font-size: 7px;
-  font-weight: 600;
+    font-size: 7px;
+    font-weight: 600;
 
-  text-align: right;
+    text-align: right;
 
-  white-space: nowrap;
+    white-space: nowrap;
 }
 
 /* =========================================================
@@ -880,13 +896,13 @@
    ========================================================= */
 
 .jd-empty {
-  padding: 25px 6px;
+    padding: 25px 6px;
 
-  color: #756960;
+    color: #756960;
 
-  font-size: 9px;
+    font-size: 9px;
 
-  text-align: center;
+    text-align: center;
 }
 
 /* =========================================================
@@ -894,98 +910,98 @@
    ========================================================= */
 
 .jd-account-strip {
-  min-width: 0;
+    min-width: 0;
 
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 
-  gap: 10px;
+    gap: 10px;
 
-  margin-top: 9px;
-  padding: 10px 12px;
+    margin-top: 9px;
+    padding: 10px 12px;
 
-  border: 1px solid #382b24;
-  border-radius: 7px;
+    border: 1px solid #382b24;
+    border-radius: 7px;
 
-  background: #1d1714;
+    background: #1d1714;
 }
 
 .jd-account-avatar {
-  width: 32px;
-  height: 32px;
+    width: 32px;
+    height: 32px;
 
-  flex: 0 0 32px;
+    flex: 0 0 32px;
 
-  overflow: hidden;
+    overflow: hidden;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-  border-radius: 50%;
+    border-radius: 50%;
 
-  background: #28201b;
-  border: 1px solid #3a2d26;
+    background: #28201b;
+    border: 1px solid #3a2d26;
 
-  color: #ff6b18;
+    color: #ff6b18;
 }
 
 .jd-account-avatar img {
-  width: 100%;
-  height: 100%;
+    width: 100%;
+    height: 100%;
 
-  display: block;
+    display: block;
 
-  object-fit: cover;
+    object-fit: cover;
 }
 
-.jd-account-strip > div:nth-child(2) {
-  min-width: 0;
+.jd-account-strip>div:nth-child(2) {
+    min-width: 0;
 
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 
-  gap: 1px;
+    gap: 1px;
 }
 
 .jd-account-strip strong {
-  overflow: hidden;
+    overflow: hidden;
 
-  color: #fff8e8;
+    color: #fff8e8;
 
-  font-size: 10px;
-  font-weight: 800;
+    font-size: 10px;
+    font-weight: 800;
 
-  white-space: nowrap;
-  text-overflow: ellipsis;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .jd-account-strip span {
-  overflow: hidden;
+    overflow: hidden;
 
-  color: #756960;
+    color: #756960;
 
-  font-size: 8px;
+    font-size: 8px;
 
-  white-space: nowrap;
-  text-overflow: ellipsis;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
-.jd-account-strip > a {
-  flex-shrink: 0;
+.jd-account-strip>a {
+    flex-shrink: 0;
 
-  margin-left: auto;
+    margin-left: auto;
 
-  color: #ff6b18;
+    color: #ff6b18;
 
-  font-size: 8px;
-  font-weight: 800;
+    font-size: 8px;
+    font-weight: 800;
 
-  text-decoration: none;
+    text-decoration: none;
 }
 
-.jd-account-strip > a:hover {
-  text-decoration: underline;
+.jd-account-strip>a:hover {
+    text-decoration: underline;
 }
 
 /* =========================================================
@@ -993,22 +1009,22 @@
    ========================================================= */
 
 @media (max-width: 1050px) {
-  .jd-sidebar {
-    width: 165px;
-  }
+    .jd-sidebar {
+        width: 165px;
+    }
 
-  .jd-main {
-    width: calc(100% - 165px);
+    .jd-main {
+        width: calc(100% - 165px);
 
-    margin-left: 165px;
+        margin-left: 165px;
 
-    padding-left: 22px;
-    padding-right: 22px;
-  }
+        padding-left: 22px;
+        padding-right: 22px;
+    }
 
-  .jd-data-grid {
-    grid-template-columns: 1fr;
-  }
+    .jd-data-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* =========================================================
@@ -1016,22 +1032,22 @@
    ========================================================= */
 
 @media (max-width: 800px) {
-  .jd-stats {
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
-  }
+    .jd-stats {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
 
-  .jd-filters {
-    grid-template-columns: 1fr;
-  }
+    .jd-filters {
+        grid-template-columns: 1fr;
+    }
 
-  .jd-header {
-    flex-direction: column;
-  }
+    .jd-header {
+        flex-direction: column;
+    }
 
-  .jd-refresh {
-    align-self: flex-start;
-  }
+    .jd-refresh {
+        align-self: flex-start;
+    }
 }
 
 /* =========================================================
@@ -1039,97 +1055,92 @@
    ========================================================= */
 
 @media (max-width: 620px) {
-  .jd-dashboard {
-    display: block;
-  }
+    .jd-dashboard {
+        display: block;
+    }
 
-  .jd-sidebar {
-    position: static;
+    .jd-sidebar {
+        position: static;
 
-    width: 100%;
-    min-height: auto;
+        width: 100%;
+        min-height: auto;
 
-    display: block;
+        display: block;
 
-    padding: 12px;
+        padding: 12px;
 
-    border-right: 0;
-    border-bottom: 1px solid
-      rgba(255, 248, 232, 0.07);
-  }
+        border-right: 0;
+        border-bottom: 1px solid rgba(255, 248, 232, 0.07);
+    }
 
-  .jd-brand {
-    padding-bottom: 12px;
-  }
+    .jd-brand {
+        padding-bottom: 12px;
+    }
 
-  .jd-nav {
-    display: grid;
+    .jd-nav {
+        display: grid;
 
-    grid-template-columns:
-      repeat(3, minmax(0, 1fr));
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
 
-    gap: 5px;
-  }
+        gap: 5px;
+    }
 
-  .jd-nav-item {
-    justify-content: center;
+    .jd-nav-item {
+        justify-content: center;
 
-    padding: 0 5px;
-  }
+        padding: 0 5px;
+    }
 
-  .jd-sidebar-spacer {
-    display: none;
-  }
+    .jd-sidebar-spacer {
+        display: none;
+    }
 
-  .jd-profile {
-    margin-top: 10px;
-  }
+    .jd-profile {
+        margin-top: 10px;
+    }
 
-  .jd-logout {
-    padding-bottom: 2px;
-  }
+    .jd-logout {
+        padding-bottom: 2px;
+    }
 
-  .jd-main {
-    width: 100%;
+    .jd-main {
+        width: 100%;
 
-    margin-left: 0;
+        margin-left: 0;
 
-    padding: 18px 12px 30px;
-  }
+        padding: 18px 12px 30px;
+    }
 
-  .jd-header h1 {
-    font-size: 29px;
-  }
+    .jd-header h1 {
+        font-size: 29px;
+    }
 
-  .jd-description {
-    font-size: 9px;
-  }
+    .jd-description {
+        font-size: 9px;
+    }
 
-  .jd-stats {
-    grid-template-columns: 1fr;
-  }
+    .jd-stats {
+        grid-template-columns: 1fr;
+    }
 
-  .jd-data-grid {
-    grid-template-columns: 1fr;
-  }
+    .jd-data-grid {
+        grid-template-columns: 1fr;
+    }
 
-  .jd-project-row {
-    grid-template-columns:
-      90px
-      minmax(50px, 1fr)
-      40px;
-  }
+    .jd-project-row {
+        grid-template-columns:
+            90px minmax(50px, 1fr) 40px;
+    }
 
-  .jd-language-row {
-    grid-template-columns:
-      65px
-      minmax(50px, 1fr)
-      40px;
-  }
+    .jd-language-row {
+        grid-template-columns:
+            65px minmax(50px, 1fr) 40px;
+    }
 
-  .jd-account-strip {
-    align-items: flex-start;
-  }
+    .jd-account-strip {
+        align-items: flex-start;
+    }
 }
 
 /* =========================================================
@@ -1137,30 +1148,433 @@
    ========================================================= */
 
 @media (max-width: 400px) {
-  .jd-nav-item span {
-    font-size: 9px;
-  }
+    .jd-nav-item span {
+        font-size: 9px;
+    }
 
-  .jd-project-row {
-    grid-template-columns:
-      78px
-      minmax(40px, 1fr)
-      37px;
+    .jd-project-row {
+        grid-template-columns:
+            78px minmax(40px, 1fr) 37px;
 
-    gap: 6px;
-  }
+        gap: 6px;
+    }
 
-  .jd-language-row {
-    grid-template-columns:
-      58px
-      minmax(40px, 1fr)
-      37px;
+    .jd-language-row {
+        grid-template-columns:
+            58px minmax(40px, 1fr) 37px;
 
-    gap: 6px;
-  }
+        gap: 6px;
+    }
 
-  .jd-project-name,
-  .jd-language-row > span {
-    font-size: 7px;
-  }
+    .jd-project-name,
+    .jd-language-row>span {
+        font-size: 7px;
+    }
+}
+
+/* =========================================================
+   LIGHT THEME
+   Shared with Profile page
+   ========================================================= */
+
+html[data-journal-theme="light"],
+html[data-journal-theme="light"] body {
+    background: #fff8ee;
+}
+
+
+/* =========================================================
+   DASHBOARD ROOT
+   ========================================================= */
+
+html[data-journal-theme="light"] .jd-dashboard {
+    --jd-bg: #fff8ee;
+    --jd-sidebar: #fff3e3;
+
+    --jd-panel: #fffaf3;
+    --jd-panel-hover: #fff1df;
+
+    --jd-border: rgba(53, 42, 35, 0.12);
+    --jd-border-soft: rgba(53, 42, 35, 0.07);
+
+    --jd-text: #352a23;
+    --jd-text-soft: #66584e;
+    --jd-text-muted: #968578;
+
+    --jd-pink: #f45113;
+    --jd-pink-dark: #d9410e;
+
+    --jd-orange: #ff6b18;
+    --jd-orange-soft: #ff8b45;
+
+    background: #fff8ee;
+    color: #352a23;
+}
+
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+html[data-journal-theme="light"] .jd-sidebar {
+    background: #fff3e3;
+    border-right-color: rgba(53, 42, 35, 0.09);
+}
+
+
+/* BRAND */
+
+html[data-journal-theme="light"] .jd-brand {
+    color: #352a23;
+}
+
+html[data-journal-theme="light"] .jd-brand-icon {
+    background: #fff0dc;
+    color: #f45113;
+    border-color: rgba(53, 42, 35, 0.08);
+}
+
+
+/* NAV */
+
+html[data-journal-theme="light"] .jd-nav-item {
+    color: #968578;
+}
+
+html[data-journal-theme="light"] .jd-nav-item:hover {
+    color: #352a23;
+    background: rgba(53, 42, 35, 0.045);
+}
+
+html[data-journal-theme="light"] .jd-nav-active {
+    color: #352a23;
+    background: rgba(244, 81, 19, 0.10);
+}
+
+html[data-journal-theme="light"] .jd-nav-active svg {
+    color: #f45113;
+}
+
+
+/* SIDEBAR BOTTOM */
+
+html[data-journal-theme="light"] .jd-sidebar-bottom {
+    border-top-color: rgba(53, 42, 35, 0.07);
+}
+
+
+/* PROFILE */
+
+html[data-journal-theme="light"] .jd-profile {
+    color: #352a23;
+}
+
+html[data-journal-theme="light"] .jd-profile:hover {
+    background: rgba(53, 42, 35, 0.045);
+}
+
+html[data-journal-theme="light"] .jd-profile-avatar,
+html[data-journal-theme="light"] .jd-profile-placeholder {
+    background: #ffe9d0;
+    border-color: rgba(53, 42, 35, 0.10);
+    color: #f45113;
+}
+
+html[data-journal-theme="light"] .jd-profile-info strong {
+    color: #352a23;
+}
+
+html[data-journal-theme="light"] .jd-profile-info span {
+    color: #968578;
+}
+
+/* LOGOUT */
+
+html[data-journal-theme="light"] .jd-logout {
+    color: #968578;
+}
+
+html[data-journal-theme="light"] .jd-logout:hover {
+    color: #d84c3d;
+    background: rgba(216, 76, 61, 0.07);
+}
+
+
+/* =========================================================
+   MAIN
+   ========================================================= */
+
+html[data-journal-theme="light"] .jd-main {
+    background: #fff8ee;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+html[data-journal-theme="light"] .jd-eyebrow {
+    color: #f45113;
+}
+
+html[data-journal-theme="light"] .jd-header h1 {
+    color: #352a23;
+}
+
+html[data-journal-theme="light"] .jd-header h1 span {
+    color: #f45113;
+}
+
+html[data-journal-theme="light"] .jd-description {
+    color: #968578;
+}
+
+
+/* =========================================================
+   REFRESH
+   ========================================================= */
+
+html[data-journal-theme="light"] .jd-refresh {
+    background: rgba(244, 81, 19, 0.055);
+    border-color: rgba(244, 81, 19, 0.28);
+    color: #f45113;
+}
+
+html[data-journal-theme="light"] .jd-refresh:hover {
+    background: rgba(244, 81, 19, 0.10);
+    border-color: rgba(244, 81, 19, 0.45);
+}
+
+
+/* =========================================================
+   FILTERS
+   ========================================================= */
+
+html[data-journal-theme="light"] .jd-filter-label {
+    color: #968578;
+}
+
+html[data-journal-theme="light"] .jd-filter-control {
+    background: #fffaf3;
+    border-color: rgba(53, 42, 35, 0.12);
+}
+
+html[data-journal-theme="light"] .jd-filter-control:hover {
+    background: #fff1df;
+    border-color: rgba(53, 42, 35, 0.16);
+}
+
+html[data-journal-theme="light"] .jd-filter-control:focus-within {
+    background: #fff1df;
+    border-color: rgba(244, 81, 19, 0.45);
+}
+
+html[data-journal-theme="light"] .jd-filter-icon {
+    color: #968578;
+}
+
+html[data-journal-theme="light"] .jd-filter-chevron {
+    color: #968578;
+}
+
+html[data-journal-theme="light"] .jd-filter-control select {
+    color: #352a23;
+}
+
+html[data-journal-theme="light"] .jd-filter-control select option {
+    background: #fffaf3;
+    color: #352a23;
+}
+
+
+/* =========================================================
+   STATS
+   ========================================================= */
+
+html[data-journal-theme="light"] .jd-stat-card {
+    background: #fffaf3;
+    border-color: rgba(53, 42, 35, 0.12);
+}
+
+html[data-journal-theme="light"] .jd-stat-card:hover {
+    border-color: rgba(53, 42, 35, 0.17);
+}
+
+html[data-journal-theme="light"] .jd-stat-top span {
+    color: #968578;
+}
+
+html[data-journal-theme="light"] .jd-stat-icon {
+    color: #f45113;
+}
+
+html[data-journal-theme="light"] .jd-stat-card strong {
+    color: #352a23;
+}
+
+html[data-journal-theme="light"] .jd-stat-card small {
+    color: #968578;
+}
+
+
+/* =========================================================
+   PANELS
+   ========================================================= */
+
+html[data-journal-theme="light"] .jd-panel {
+    background: #fffaf3;
+    border-color: rgba(53, 42, 35, 0.12);
+}
+
+html[data-journal-theme="light"] .jd-panel-header p {
+    color: #f45113;
+}
+
+html[data-journal-theme="light"] .jd-panel-header h2 {
+    color: #352a23;
+}
+
+html[data-journal-theme="light"] .jd-panel-header>span {
+    color: #968578;
+}
+
+html[data-journal-theme="light"] .jd-panel-code {
+    color: #f45113;
+}
+
+
+/* =========================================================
+   PROJECT DURATIONS
+   ========================================================= */
+
+html[data-journal-theme="light"] .jd-project-name {
+    color: #66584e;
+}
+
+html[data-journal-theme="light"] .jd-bar {
+    background: #eadfd2;
+}
+
+html[data-journal-theme="light"] .jd-bar-fill {
+    background: #ff6b18;
+}
+
+html[data-journal-theme="light"] .jd-project-time {
+    color: #66584e;
+}
+
+
+/* =========================================================
+   LANGUAGE BREAKDOWN
+   ========================================================= */
+
+html[data-journal-theme="light"] .jd-language-row>span {
+    color: #66584e;
+}
+
+html[data-journal-theme="light"] .jd-language-bar {
+    background: #eadfd2;
+}
+
+html[data-journal-theme="light"] .jd-language-bar>div {
+    background: #f45113;
+}
+
+html[data-journal-theme="light"] .jd-language-row strong {
+    color: #968578;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+html[data-journal-theme="light"] .jd-empty {
+    color: #968578;
+}
+
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+html[data-journal-theme="light"] .jd-error {
+    background: rgba(216, 76, 61, 0.055);
+    border-color: rgba(216, 76, 61, 0.18);
+    color: #c84c40;
+}
+
+html[data-journal-theme="light"] .jd-error span {
+    color: #b86f68;
+}
+
+html[data-journal-theme="light"] .jd-error button {
+    background: #fff0e5;
+    color: #d84c3d;
+    border-color: rgba(216, 76, 61, 0.16);
+}
+
+
+/* =========================================================
+   ACCOUNT STRIP
+   ========================================================= */
+
+html[data-journal-theme="light"] .jd-account-strip {
+    background: #fffaf3;
+    border-color: rgba(53, 42, 35, 0.12);
+}
+
+html[data-journal-theme="light"] .jd-account-avatar {
+    background: #ffe9d0;
+    border-color: rgba(53, 42, 35, 0.09);
+    color: #f45113;
+}
+
+html[data-journal-theme="light"] .jd-account-strip strong {
+    color: #352a23;
+}
+
+html[data-journal-theme="light"] .jd-account-strip span {
+    color: #968578;
+}
+
+html[data-journal-theme="light"] .jd-account-strip a {
+    color: #f45113;
+}
+
+
+/* =========================================================
+   PROJECT/LANGUAGE LIST BORDERS
+   ========================================================= */
+
+html[data-journal-theme="light"] .jd-project-row {
+    border-color: rgba(53, 42, 35, 0.055);
+}
+
+html[data-journal-theme="light"] .jd-language-row {
+    border-color: rgba(53, 42, 35, 0.055);
+}
+
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+html[data-journal-theme="light"] .jd-dashboard {
+    scrollbar-color: #d8c8b8 #fff3e3;
+}
+
+
+/* =========================================================
+   IMPORTANT: COVER HARD-CODED DARK COLORS
+   ========================================================= */
+
+html[data-journal-theme="light"] .jd-project-panel,
+html[data-journal-theme="light"] .jd-language-panel {
+    background: #fffaf3;
+}
+
+html[data-journal-theme="light"] .jd-project-list,
+html[data-journal-theme="light"] .jd-language-list {
+    background: transparent;
 }

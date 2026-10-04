@@ -21,7 +21,6 @@ import {
   User,
 } from "lucide-react";
 
-
 type Project = {
   name: string;
   total_seconds: number;
@@ -212,7 +211,9 @@ function StatCard({
 
 export default function DashboardPage() {
   const [data, setData] =
-    useState<DashboardData | null>(null);
+    useState<DashboardData | null>(
+      null
+    );
 
   const [loading, setLoading] =
     useState(true);
@@ -228,6 +229,27 @@ export default function DashboardPage() {
 
   const [language, setLanguage] =
     useState("all");
+
+  /*
+   * ---------------------------------------------------------
+   * SHARED THEME
+   * Reads the same theme selected on the Profile page.
+   * ---------------------------------------------------------
+   */
+  useEffect(() => {
+    const savedTheme =
+      window.localStorage.getItem(
+        "journal-theme"
+      );
+
+    const theme =
+      savedTheme === "light"
+        ? "light"
+        : "dark";
+
+    document.documentElement.dataset.journalTheme =
+      theme;
+  }, []);
 
   async function loadDashboard() {
     try {
@@ -253,12 +275,13 @@ export default function DashboardPage() {
         );
       }
 
-      const response = await fetch(
-        `/api/dashboard?${params.toString()}`,
-        {
-          cache: "no-store",
-        }
-      );
+      const response =
+        await fetch(
+          `/api/dashboard?${params.toString()}`,
+          {
+            cache: "no-store",
+          }
+        );
 
       const contentType =
         response.headers.get(
@@ -315,7 +338,11 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadDashboard();
-  }, [range, project, language]);
+  }, [
+    range,
+    project,
+    language,
+  ]);
 
   const projects = useMemo(() => {
     return (
@@ -334,9 +361,7 @@ export default function DashboardPage() {
 
   const languages =
     useMemo(() => {
-      return (
-        data?.languages || []
-      );
+      return data?.languages || [];
     }, [data]);
 
   const maxProjectSeconds =
@@ -389,6 +414,7 @@ export default function DashboardPage() {
       value: "all",
       label: "All Projects",
     },
+
     ...(
       data?.filters?.options
         ?.projects || []
@@ -403,6 +429,7 @@ export default function DashboardPage() {
       value: "all",
       label: "All Languages",
     },
+
     ...(
       data?.filters?.options
         ?.languages || []
@@ -443,7 +470,7 @@ export default function DashboardPage() {
           </a>
 
           <a
-            href="/settings"
+            href="/profile"
             className="jd-nav-item"
           >
             <Settings size={16} />
@@ -554,7 +581,9 @@ export default function DashboardPage() {
         <section className="jd-filters">
           <FilterSelect
             label="DATE RANGE"
-            icon={<Clock3 size={14} />}
+            icon={
+              <Clock3 size={14} />
+            }
             value={range}
             onChange={setRange}
             options={[
@@ -584,7 +613,9 @@ export default function DashboardPage() {
           <FilterSelect
             label="PROJECT"
             icon={
-              <FolderKanban size={14} />
+              <FolderKanban
+                size={14}
+              />
             }
             value={project}
             onChange={setProject}
@@ -593,7 +624,9 @@ export default function DashboardPage() {
 
           <FilterSelect
             label="LANGUAGE"
-            icon={<Code2 size={14} />}
+            icon={
+              <Code2 size={14} />
+            }
             value={language}
             onChange={setLanguage}
             options={languageOptions}
