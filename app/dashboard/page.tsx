@@ -1,344 +1,830 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import "./dashboard.css";
+
 import {
-  Home,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  BarChart3,
   BookOpen,
-  Settings,
-  LogOut,
-  RefreshCw,
   ChevronDown,
   Clock3,
   Code2,
-  CalendarDays,
-  Filter,
-  User,
   FolderKanban,
+  LogOut,
+  RefreshCw,
+  Settings,
+  User,
 } from "lucide-react";
 
-import ProjectList from "@/components/dashboard/ProjectList";
 
 type Project = {
   name: string;
   total_seconds: number;
-  most_recent_heartbeat: string | null;
-  languages: string[];
-  archived: boolean;
+  languages?: string[];
+  archived?: boolean;
+  most_recent_heartbeat?: string | null;
 };
 
-type Profile = {
+type BreakdownItem = {
   name: string;
-  username: string;
-  avatar: string;
+  seconds: number;
 };
 
-type FilterRange = "all" | "today" | "yesterday" | "week" | "month";
+type DashboardData = {
+  profile?: {
+    name?: string | null;
+    email?: string | null;
+    username?: string | null;
+    avatar_url?: string | null;
+    slack_id?: string | null;
+  };
+
+  filters?: {
+    selected?: {
+      range?: string;
+      project?: string;
+      language?: string;
+    };
+
+    options?: {
+      projects?: string[];
+      languages?: string[];
+    };
+  };
+
+  stats?: {
+    totalSeconds?: number;
+
+    topProject?: {
+      name: string;
+      seconds: number;
+    } | null;
+
+    topLanguage?: {
+      name: string;
+      seconds: number;
+    } | null;
+
+    projects?: number;
+
+    streakDays?: number;
+  };
+
+  projects?: Project[];
+
+  projectDurations?: BreakdownItem[];
+
+  languages?: BreakdownItem[];
+
+  dateRange?: {
+    range?: string;
+    startDate?: string;
+    endDate?: string;
+  };
+};
 
 function formatTime(seconds: number) {
-  if (!seconds || seconds < 60) return "0m";
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  if (!seconds || seconds < 1) {
+    return "0m";
+  }
+
+  const hours = Math.floor(
+    seconds / 3600
+  );
+
+  const minutes = Math.floor(
+    (seconds % 3600) / 60
+  );
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+
+  return `${minutes}m`;
+}
+
+function formatDetailedTime(
+  seconds: number
+) {
+  if (!seconds || seconds < 1) {
+    return "0m";
+  }
+
+  const hours = Math.floor(
+    seconds / 3600
+  );
+
+  const minutes = Math.floor(
+    (seconds % 3600) / 60
+  );
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+
+  return `${minutes}m`;
+}
+
+function FilterSelect({
+  label,
+  icon,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  icon: React.ReactNode;
+  value: string;
+  options: Array<{
+    value: string;
+    label: string;
+  }>;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="jd-filter">
+      <span className="jd-filter-label">
+        {label}
+      </span>
+
+      <span className="jd-filter-control">
+        <span className="jd-filter-icon">
+          {icon}
+        </span>
+
+        <select
+          value={value}
+          onChange={(event) =>
+            onChange(event.target.value)
+          }
+        >
+          {options.map((option) => (
+            <option
+              key={option.value}
+              value={option.value}
+            >
+              {option.label}
+            </option>
+          ))}
+        </select>
+
+        <ChevronDown
+          size={14}
+          className="jd-filter-chevron"
+        />
+      </span>
+    </label>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  description,
+  icon,
+}: {
+  label: string;
+  value: string;
+  description: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <article className="jd-stat-card">
+      <div className="jd-stat-top">
+        <span>{label}</span>
+
+        <div className="jd-stat-icon">
+          {icon}
+        </div>
+      </div>
+
+      <strong>{value}</strong>
+
+      <small>{description}</small>
+    </article>
+  );
 }
 
 export default function DashboardPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState("");
+  const [data, setData] =
+    useState<DashboardData | null>(null);
 
-  const [dateRange, setDateRange] = useState<FilterRange>("all");
-  const [selectedProject, setSelectedProject] = useState("all");
-  const [selectedLanguage, setSelectedLanguage] = useState("all");
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
+
+  const [range, setRange] =
+    useState("today");
+
+  const [project, setProject] =
+    useState("all");
+
+  const [language, setLanguage] =
+    useState("all");
 
   async function loadDashboard() {
     try {
+      setLoading(true);
       setError("");
 
-      const [projectsRes, profileRes] = await Promise.all([
-        fetch("/api/hackatime/projects", { cache: "no-store" }),
-        fetch("/api/dashboard/profile", { cache: "no-store" }),
-      ]);
+      const params =
+        new URLSearchParams();
 
-      const projectsData = await projectsRes.json();
-      if (!projectsRes.ok) throw new Error(projectsData.error || "Failed to load projects");
-      setProjects(projectsData.projects || []);
+      params.set("range", range);
 
-      if (profileRes.ok) {
-        const profileData = await profileRes.json();
-        setProfile(profileData);
+      if (project !== "all") {
+        params.set(
+          "project",
+          project
+        );
       }
+
+      if (language !== "all") {
+        params.set(
+          "language",
+          language
+        );
+      }
+
+      const response = await fetch(
+        `/api/dashboard?${params.toString()}`,
+        {
+          cache: "no-store",
+        }
+      );
+
+      const contentType =
+        response.headers.get(
+          "content-type"
+        ) || "";
+
+      if (!response.ok) {
+        const text =
+          await response.text();
+
+        throw new Error(
+          `Dashboard API failed (${response.status}): ${text.slice(
+            0,
+            300
+          )}`
+        );
+      }
+
+      if (
+        !contentType.includes(
+          "application/json"
+        )
+      ) {
+        const text =
+          await response.text();
+
+        throw new Error(
+          `Dashboard API returned non-JSON data: ${text.slice(
+            0,
+            300
+          )}`
+        );
+      }
+
+      const result =
+        (await response.json()) as DashboardData;
+
+      setData(result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      console.error(
+        "Dashboard error:",
+        err
+      );
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Could not load dashboard."
+      );
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   }
 
-  useEffect(() => { loadDashboard(); }, []);
-
-  function refresh() {
-    setRefreshing(true);
+  useEffect(() => {
     loadDashboard();
-  }
+  }, [range, project, language]);
 
-  const active = useMemo(() => projects.filter((p) => !p.archived), [projects]);
-
-  const availableProjects = useMemo(() => active.map((p) => p.name), [active]);
-
-  const availableLanguages = useMemo(() => {
-    const set = new Set<string>();
-    active.forEach((p) => p.languages.forEach((l) => set.add(l)));
-    return Array.from(set).sort();
-  }, [active]);
-
-  const filteredProjects = useMemo(() => {
-    const now = new Date();
-    const todayStr = now.toISOString().slice(0, 10);
-    const yesterday = new Date(now);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().slice(0, 10);
-    const weekAgo = new Date(now);
-    weekAgo.setDate(weekAgo.getDate() - 6);
-
-    return active.filter((p) => {
-      if (selectedProject !== "all" && p.name !== selectedProject) return false;
-      if (selectedLanguage !== "all" && !p.languages.includes(selectedLanguage)) return false;
-
-      if (dateRange !== "all" && p.most_recent_heartbeat) {
-        const hb = p.most_recent_heartbeat.slice(0, 10);
-        if (dateRange === "today" && hb !== todayStr) return false;
-        if (dateRange === "yesterday" && hb !== yesterdayStr) return false;
-        if (dateRange === "week" && hb < weekAgo.toISOString().slice(0, 10)) return false;
-        if (dateRange === "month" && hb.slice(0, 7) !== todayStr.slice(0, 7)) return false;
-      }
-
-      return true;
-    });
-  }, [active, selectedProject, selectedLanguage, dateRange]);
-
-  const totalTime = useMemo(
-    () => filteredProjects.reduce((s, p) => s + p.total_seconds, 0),
-    [filteredProjects]
-  );
-
-  const topProject = useMemo(
-    () => [...filteredProjects].sort((a, b) => b.total_seconds - a.total_seconds)[0] ?? null,
-    [filteredProjects]
-  );
-
-  const languageData = useMemo(() => {
-    const map = new Map<string, number>();
-    filteredProjects.forEach((p) =>
-      p.languages.forEach((l) => map.set(l, (map.get(l) ?? 0) + p.total_seconds))
-    );
-    return Array.from(map.entries())
-      .sort((a, b) => b[1] - a[1])
-      .map(([name, seconds]) => ({ name, seconds }));
-  }, [filteredProjects]);
-
-  const maxProjectTime = useMemo(
-    () => Math.max(...filteredProjects.map((p) => p.total_seconds), 1),
-    [filteredProjects]
-  );
-
-  const DONUT_COLORS = ["#ff6b18", "#ffd928", "#c7d600", "#dceb20", "#f45113", "#ff9f43", "#6c8cff", "#c45acb"];
-
-  const donutStyle = useMemo(() => {
-    if (!languageData.length) return { background: "conic-gradient(#302729 0deg 360deg)" };
-    const total = languageData.reduce((s, i) => s + i.seconds, 0);
-    let cur = 0;
-    const stops = languageData.map((item, i) => {
-      const pct = (item.seconds / total) * 100;
-      const start = cur;
-      cur += pct;
-      return `${DONUT_COLORS[i % DONUT_COLORS.length]} ${start}% ${cur}%`;
-    });
-    return { background: `conic-gradient(${stops.join(", ")})` };
-  }, [languageData]);
-
-  if (loading) {
+  const projects = useMemo(() => {
     return (
-      <main className="dashboard-loading-screen">
-        <div><Clock3 size={32} /><p>Loading your journal…</p></div>
-      </main>
+      data?.projects || []
+    ).filter(
+      (item) => !item.archived
     );
-  }
+  }, [data]);
+
+  const projectDurations =
+    useMemo(() => {
+      return (
+        data?.projectDurations || []
+      );
+    }, [data]);
+
+  const languages =
+    useMemo(() => {
+      return (
+        data?.languages || []
+      );
+    }, [data]);
+
+  const maxProjectSeconds =
+    Math.max(
+      ...projectDurations.map(
+        (item) => item.seconds
+      ),
+      1
+    );
+
+  const maxLanguageSeconds =
+    Math.max(
+      ...languages.map(
+        (item) => item.seconds
+      ),
+      1
+    );
+
+  const totalSeconds =
+    Number(
+      data?.stats?.totalSeconds || 0
+    );
+
+  const topProject =
+    data?.stats?.topProject?.name ||
+    "—";
+
+  const topLanguage =
+    data?.stats?.topLanguage?.name ||
+    "—";
+
+  const profileName =
+    data?.profile?.name ||
+    "Builder";
+
+  const profileEmail =
+    data?.profile?.email ||
+    "";
+
+  const profileUsername =
+    data?.profile?.username ||
+    "";
+
+  const profileAvatar =
+    data?.profile?.avatar_url ||
+    "";
+
+  const projectOptions = [
+    {
+      value: "all",
+      label: "All Projects",
+    },
+    ...(
+      data?.filters?.options
+        ?.projects || []
+    ).map((item) => ({
+      value: item,
+      label: item,
+    })),
+  ];
+
+  const languageOptions = [
+    {
+      value: "all",
+      label: "All Languages",
+    },
+    ...(
+      data?.filters?.options
+        ?.languages || []
+    ).map((item) => ({
+      value: item,
+      label: item,
+    })),
+  ];
 
   return (
-    <main className="dashboard-page">
-      <aside className="dashboard-sidebar">
-        <div className="sidebar-user">
-          <div className="sidebar-avatar">
-            {profile?.avatar
-              ? <img src={profile.avatar} alt={profile.name || profile.username} />
-              : <User size={18} />}
+    <div className="jd-dashboard">
+      {/* SIDEBAR */}
+
+      <aside className="jd-sidebar">
+        <div className="jd-brand">
+          <div className="jd-brand-icon">
+            <BookOpen size={17} />
           </div>
-          <div className="sidebar-user-info">
-            <strong>{profile?.name || profile?.username || "GitHub User"}</strong>
-            <span>{profile?.username ? `@${profile.username}` : "Not connected"}</span>
-          </div>
+
+          <span>Journal</span>
         </div>
 
-        <nav className="dashboard-nav">
-          <a href="/dashboard" className="active"><Home size={17} /><span>Home</span></a>
-          <a href="#projects"><FolderKanban size={17} /><span>Projects</span></a>
-          <a href="#journal"><BookOpen size={17} /><span>Journal</span></a>
-          <a href="#settings"><Settings size={17} /><span>Settings</span></a>
+        <nav className="jd-nav">
+          <a
+            href="/dashboard"
+            className="jd-nav-item jd-nav-active"
+          >
+            <BarChart3 size={16} />
+            <span>Dashboard</span>
+          </a>
+
+          <a
+            href="/journal"
+            className="jd-nav-item"
+          >
+            <BookOpen size={16} />
+            <span>Journal</span>
+          </a>
+
+          <a
+            href="/settings"
+            className="jd-nav-item"
+          >
+            <Settings size={16} />
+            <span>Settings</span>
+          </a>
         </nav>
 
-        <div className="sidebar-bottom">
-          <a href="/api/auth/logout"><LogOut size={15} />Logout</a>
-        </div>
+        <div className="jd-sidebar-spacer" />
+
+        <a
+          href="/profile"
+          className="jd-profile"
+        >
+          {profileAvatar ? (
+            <img
+              src={profileAvatar}
+              alt={profileName}
+              className="jd-profile-avatar"
+            />
+          ) : (
+            <div className="jd-profile-placeholder">
+              <User size={17} />
+            </div>
+          )}
+
+          <div className="jd-profile-info">
+            <strong>
+              {profileName}
+            </strong>
+
+            <span>
+              {profileUsername
+                ? `@${profileUsername}`
+                : profileEmail ||
+                "View profile"}
+            </span>
+          </div>
+        </a>
+
+        <a
+          href="/api/auth/logout"
+          className="jd-logout"
+        >
+          <LogOut size={15} />
+          <span>Logout</span>
+        </a>
       </aside>
 
-      <section className="dashboard-main">
-        <header className="dashboard-header">
+      {/* MAIN */}
+
+      <main className="jd-main">
+        <header className="jd-header">
           <div>
-            <p className="dashboard-eyebrow">YOUR BUILDING JOURNEY</p>
-            <h1>Keep Track of <span>Your Coding Time</span></h1>
-            <p className="dashboard-subtitle">Your projects, coding sessions and everything you build, all in one place.</p>
+            <p className="jd-eyebrow">
+              YOUR BUILDING JOURNEY
+            </p>
+
+            <h1>
+              Keep Track of{" "}
+              <span>
+                Your Coding Time
+              </span>
+            </h1>
+
+            <p className="jd-description">
+              Your projects, coding
+              sessions and everything
+              you build, all in one place.
+            </p>
           </div>
-          <button className="dashboard-refresh" onClick={refresh} disabled={refreshing}>
-            <RefreshCw size={15} className={refreshing ? "spin" : ""} />
-            {refreshing ? "Refreshing…" : "Refresh"}
+
+          <button
+            className="jd-refresh"
+            onClick={loadDashboard}
+            disabled={loading}
+          >
+            <RefreshCw
+              size={14}
+              className={
+                loading
+                  ? "jd-spin"
+                  : ""
+              }
+            />
+
+            Refresh
           </button>
         </header>
 
-        {error && <div className="dashboard-error">{error}</div>}
+        {error && (
+          <div className="jd-error">
+            <strong>
+              Could not load dashboard
+            </strong>
 
-        <section className="dashboard-filters">
-          <div className="filter-title"><Filter size={14} />Filters</div>
+            <span>{error}</span>
 
-          <div className="filter-group">
-            <label><CalendarDays size={11} />Date Range</label>
-            <div className="select-wrapper">
-              <select value={dateRange} onChange={(e) => setDateRange(e.target.value as FilterRange)}>
-                <option value="all">All Time</option>
-                <option value="today">Today</option>
-                <option value="yesterday">Yesterday</option>
-                <option value="week">Last 7 Days</option>
-                <option value="month">This Month</option>
-              </select>
-              <ChevronDown size={13} />
-            </div>
+            <button
+              onClick={loadDashboard}
+            >
+              Try again
+            </button>
           </div>
+        )}
 
-          <div className="filter-group">
-            <label><FolderKanban size={11} />Project</label>
-            <div className="select-wrapper">
-              <select value={selectedProject} onChange={(e) => setSelectedProject(e.target.value)}>
-                <option value="all">All Projects</option>
-                {availableProjects.map((p) => <option key={p} value={p}>{p}</option>)}
-              </select>
-              <ChevronDown size={13} />
-            </div>
-          </div>
+        {/* FILTERS */}
 
-          <div className="filter-group">
-            <label><Code2 size={11} />Language</label>
-            <div className="select-wrapper">
-              <select value={selectedLanguage} onChange={(e) => setSelectedLanguage(e.target.value)}>
-                <option value="all">All Languages</option>
-                {availableLanguages.map((l) => <option key={l} value={l}>{l}</option>)}
-              </select>
-              <ChevronDown size={13} />
-            </div>
-          </div>
+        <section className="jd-filters">
+          <FilterSelect
+            label="DATE RANGE"
+            icon={<Clock3 size={14} />}
+            value={range}
+            onChange={setRange}
+            options={[
+              {
+                value: "today",
+                label: "Today",
+              },
+              {
+                value: "week",
+                label: "This Week",
+              },
+              {
+                value: "month",
+                label: "This Month",
+              },
+              {
+                value: "year",
+                label: "This Year",
+              },
+              {
+                value: "all",
+                label: "All Time",
+              },
+            ]}
+          />
+
+          <FilterSelect
+            label="PROJECT"
+            icon={
+              <FolderKanban size={14} />
+            }
+            value={project}
+            onChange={setProject}
+            options={projectOptions}
+          />
+
+          <FilterSelect
+            label="LANGUAGE"
+            icon={<Code2 size={14} />}
+            value={language}
+            onChange={setLanguage}
+            options={languageOptions}
+          />
         </section>
 
-        <section className="dashboard-stats">
-          <article className="stat-card highlight">
-            <span>Total Time</span>
-            <strong>{formatTime(totalTime)}</strong>
-            <small>Based on selected filters</small>
-          </article>
-          <article className="stat-card">
-            <span>Top Project</span>
-            <strong>{topProject?.name || "—"}</strong>
-            <small>{topProject ? formatTime(topProject.total_seconds) : "No activity"}</small>
-          </article>
-          <article className="stat-card">
-            <span>Projects</span>
-            <strong>{filteredProjects.length}</strong>
-            <small>In current view</small>
-          </article>
-          <article className="stat-card">
-            <span>Languages</span>
-            <strong>{languageData.length}</strong>
-            <small>Languages tracked</small>
-          </article>
+        {/* STAT CARDS */}
+
+        <section className="jd-stats">
+          <StatCard
+            label="TOTAL TIME"
+            value={
+              loading
+                ? "..."
+                : formatTime(
+                  totalSeconds
+                )
+            }
+            description={
+              range === "today"
+                ? "Hackatime today"
+                : "Hackatime coding time"
+            }
+            icon={
+              <Clock3 size={15} />
+            }
+          />
+
+          <StatCard
+            label="TOP PROJECT"
+            value={topProject}
+            description="Most active project"
+            icon={
+              <FolderKanban
+                size={15}
+              />
+            }
+          />
+
+          <StatCard
+            label="TOP LANGUAGE"
+            value={topLanguage}
+            description="Most used language"
+            icon={
+              <Code2 size={15} />
+            }
+          />
+
+          <StatCard
+            label="PROJECTS"
+            value={String(
+              data?.stats?.projects ||
+              projects.length
+            )}
+            description="Active projects"
+            icon={
+              <BookOpen size={15} />
+            }
+          />
         </section>
 
-        <section className="dashboard-chart-grid">
-          <article className="dashboard-panel">
-            <div className="panel-header">
-              <div><p>ACTIVITY</p><h2>Project Durations</h2></div>
-              <Clock3 size={18} />
-            </div>
-            <div className="duration-list">
-              {filteredProjects.length === 0
-                ? <p className="empty-chart">No data for these filters.</p>
-                : [...filteredProjects]
-                    .sort((a, b) => b.total_seconds - a.total_seconds)
-                    .map((p) => (
-                      <div className="duration-row" key={p.name}>
-                        <span className="duration-name" title={p.name}>{p.name}</span>
-                        <div className="duration-bar">
-                          <i style={{ width: `${Math.max(3, (p.total_seconds / maxProjectTime) * 100)}%` }} />
-                        </div>
-                        <strong>{formatTime(p.total_seconds)}</strong>
-                      </div>
-                    ))}
-            </div>
-          </article>
+        {/* DATA */}
 
-          <article className="dashboard-panel">
-            <div className="panel-header">
-              <div><p>BREAKDOWN</p><h2>Languages</h2></div>
-              <Code2 size={18} />
+        <section className="jd-data-grid">
+          {/* PROJECTS */}
+
+          <article className="jd-panel jd-project-panel">
+            <div className="jd-panel-header">
+              <div>
+                <p>
+                  ACTIVITY
+                </p>
+
+                <h2>
+                  Project Durations
+                </h2>
+              </div>
+
+              <span>
+                {projectDurations.length}{" "}
+                projects
+              </span>
             </div>
-            <div className="language-chart">
-              <div className="language-donut" style={donutStyle}>
-                <div className="donut-hole">
-                  <strong>{formatTime(totalTime)}</strong>
-                  <span>Total</span>
+
+            <div className="jd-project-list">
+              {projectDurations.length ===
+                0 ? (
+                <div className="jd-empty">
+                  No project data
+                  available.
                 </div>
+              ) : (
+                projectDurations.map(
+                  (item) => {
+                    const width =
+                      Math.max(
+                        2,
+                        (item.seconds /
+                          maxProjectSeconds) *
+                        100
+                      );
+
+                    return (
+                      <div
+                        className="jd-project-row"
+                        key={item.name}
+                      >
+                        <div className="jd-project-name">
+                          {item.name}
+                        </div>
+
+                        <div className="jd-bar">
+                          <div
+                            className="jd-bar-fill"
+                            style={{
+                              width: `${width}%`,
+                            }}
+                          />
+                        </div>
+
+                        <div className="jd-project-time">
+                          {formatDetailedTime(
+                            item.seconds
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }
+                )
+              )}
+            </div>
+          </article>
+
+          {/* LANGUAGES */}
+
+          <article className="jd-panel jd-language-panel">
+            <div className="jd-panel-header">
+              <div>
+                <p>
+                  BREAKDOWN
+                </p>
+
+                <h2>
+                  Languages
+                </h2>
+              </div>
+
+              <div className="jd-panel-code">
+                <Code2 size={15} />
               </div>
             </div>
-            <div className="chart-legend">
-              {languageData.slice(0, 8).map((l, i) => (
-                <span key={l.name}>
-                  <i style={{ background: DONUT_COLORS[i % DONUT_COLORS.length] }} />
-                  {l.name}
-                </span>
-              ))}
+
+            <div className="jd-language-list">
+              {languages.length ===
+                0 ? (
+                <div className="jd-empty">
+                  No language data
+                  available.
+                </div>
+              ) : (
+                languages
+                  .slice(0, 10)
+                  .map((item) => {
+                    const width =
+                      Math.max(
+                        3,
+                        (item.seconds /
+                          maxLanguageSeconds) *
+                        100
+                      );
+
+                    return (
+                      <div
+                        className="jd-language-row"
+                        key={item.name}
+                      >
+                        <span>
+                          {item.name}
+                        </span>
+
+                        <div className="jd-language-bar">
+                          <div
+                            style={{
+                              width: `${width}%`,
+                            }}
+                          />
+                        </div>
+
+                        <strong>
+                          {formatDetailedTime(
+                            item.seconds
+                          )}
+                        </strong>
+                      </div>
+                    );
+                  })
+              )}
             </div>
           </article>
         </section>
 
-        <section id="projects" className="dashboard-projects">
-          <ProjectList />
-        </section>
+        {/* PROFILE INFO */}
 
-        <section id="journal" className="dashboard-journal-placeholder">
-          <BookOpen size={22} />
-          <div>
-            <h2>Your Journal</h2>
-            <p>Your project notes, memories and building sessions will appear here.</p>
+        <section className="jd-account-strip">
+          <div className="jd-account-avatar">
+            {profileAvatar ? (
+              <img
+                src={profileAvatar}
+                alt={profileName}
+              />
+            ) : (
+              <User size={19} />
+            )}
           </div>
-        </section>
 
-        <section id="settings" className="dashboard-journal-placeholder">
-          <Settings size={22} />
           <div>
-            <h2>Settings</h2>
-            <p>Account and integration settings will appear here.</p>
+            <strong>
+              {profileName}
+            </strong>
+
+            <span>
+              {profileEmail ||
+                "Hack Club account connected"}
+            </span>
           </div>
+
+          <a href="/profile">
+            View profile
+          </a>
         </section>
-      </section>
-    </main>
+      </main>
+    </div>
   );
 }

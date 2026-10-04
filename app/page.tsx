@@ -54,9 +54,11 @@ export default function Home() {
                         <form
                             className="signup-box"
                             id="signup"
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                window.location.href = "/auth/hackatime";
+                            onSubmit={(event) => {
+                                event.preventDefault();
+
+                                window.location.href =
+                                    "/auth/hackclub";
                             }}
                         >
                             <input
@@ -388,7 +390,7 @@ export default function Home() {
 
 
                         <p>
-                            Made with ♥ by teenagers, for teenagers at Hack Club.
+                            Made with {"<3"} by Sahir, for teenagers at Hack Club.
                         </p>
 
                     </div>

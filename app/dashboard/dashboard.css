@@ -1,0 +1,1166 @@
+/* =========================================================
+   JOURNAL DASHBOARD
+   Scoped ONLY to .jd-dashboard
+
+   Colour scheme:
+   Orange       #FF6B18
+   Deep Orange  #F45113
+   Warm Yellow  #FFD928
+   Lime         #C7D600
+   Bright Lime  #DCEB20
+   Dark Brown   #352A23
+   Warm White   #FFF8E8
+   ========================================================= */
+/* =========================================================
+   JOURNAL DASHBOARD
+   app/dashboard/dashboard.css
+   ========================================================= */
+
+.jd-dashboard {
+  min-height: 100vh;
+  width: 100%;
+
+  display: flex;
+
+  background: #17120f;
+  color: #fff8e8;
+
+  font-family: "Baloo 2", sans-serif;
+}
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+.jd-sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+
+  width: 184px;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 17px 10px;
+
+  background: #120f0d;
+  border-right: 1px solid rgba(255, 248, 232, 0.07);
+
+  z-index: 20;
+}
+
+/* BRAND */
+
+.jd-brand {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 0 5px 21px;
+
+  color: #fff8e8;
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.jd-brand-icon {
+  width: 27px;
+  height: 27px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 7px;
+
+  background: rgba(255, 107, 24, 0.08);
+  border: 1px solid rgba(255, 107, 24, 0.25);
+
+  color: #ff6b18;
+}
+
+/* NAVIGATION */
+
+.jd-nav {
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.jd-nav-item {
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 0 9px;
+
+  border-radius: 7px;
+
+  color: #978981;
+  text-decoration: none;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.jd-nav-item svg {
+  flex-shrink: 0;
+}
+
+.jd-nav-item:hover {
+  color: #fff8e8;
+
+  background: rgba(255, 107, 24, 0.08);
+}
+
+.jd-nav-active {
+  color: #fff8e8;
+
+  background: rgba(255, 107, 24, 0.16);
+}
+
+.jd-nav-active svg {
+  color: #ff6b18;
+}
+
+/* SPACER */
+
+.jd-sidebar-spacer {
+  flex: 1;
+}
+
+/* =========================================================
+   PROFILE
+   ========================================================= */
+
+.jd-profile {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 9px 5px;
+
+  border-top: 1px solid rgba(255, 248, 232, 0.07);
+
+  color: inherit;
+  text-decoration: none;
+
+  transition: background 0.15s ease;
+}
+
+.jd-profile:hover {
+  background: rgba(255, 107, 24, 0.05);
+
+  border-radius: 7px;
+}
+
+.jd-profile-avatar,
+.jd-profile-placeholder {
+  width: 32px;
+  height: 32px;
+
+  flex: 0 0 32px;
+
+  border-radius: 50%;
+}
+
+.jd-profile-avatar {
+  display: block;
+
+  object-fit: cover;
+
+  background: #28201b;
+}
+
+.jd-profile-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #28201b;
+  border: 1px solid #3a2d26;
+
+  color: #95877d;
+}
+
+.jd-profile-info {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 1px;
+}
+
+.jd-profile-info strong {
+  overflow: hidden;
+
+  color: #fff8e8;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.jd-profile-info span {
+  overflow: hidden;
+
+  color: #756960;
+
+  font-size: 7px;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* LOGOUT */
+
+.jd-logout {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 8px 5px;
+
+  color: #6f625a;
+
+  text-decoration: none;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  transition: color 0.15s ease;
+}
+
+.jd-logout:hover {
+  color: #ff6b18;
+}
+
+/* =========================================================
+   MAIN CONTENT
+   ========================================================= */
+
+.jd-main {
+  width: calc(100% - 184px);
+  min-height: 100vh;
+
+  margin-left: 184px;
+
+  padding: 23px 30px 38px;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.jd-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 21px;
+}
+
+.jd-eyebrow {
+  margin: 0 0 6px;
+
+  color: #ff6b18;
+
+  font-size: 7px;
+  font-weight: 900;
+
+  letter-spacing: 1.35px;
+  text-transform: uppercase;
+}
+
+.jd-header h1 {
+  margin: 0;
+
+  color: #fff8e8;
+
+  font-size: clamp(28px, 3vw, 39px);
+  line-height: 1.02;
+
+  font-weight: 800;
+
+  letter-spacing: -1.5px;
+}
+
+.jd-header h1 span {
+  color: #ff6b18;
+}
+
+.jd-description {
+  max-width: 600px;
+
+  margin: 7px 0 0;
+
+  color: #87786f;
+
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+/* REFRESH */
+
+.jd-refresh {
+  flex-shrink: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  height: 28px;
+
+  padding: 0 11px;
+
+  border: 1px solid rgba(255, 107, 24, 0.3);
+  border-radius: 6px;
+
+  background: rgba(255, 107, 24, 0.05);
+
+  color: #ff6b18;
+
+  font-family: inherit;
+  font-size: 8px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.jd-refresh:hover {
+  background: rgba(255, 107, 24, 0.1);
+
+  border-color: rgba(255, 107, 24, 0.45);
+}
+
+.jd-refresh:disabled {
+  opacity: 0.5;
+
+  cursor: default;
+}
+
+.jd-spin {
+  animation: jd-spin 0.8s linear infinite;
+}
+
+@keyframes jd-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.jd-error {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  margin-bottom: 12px;
+  padding: 10px 12px;
+
+  border: 1px solid rgba(255, 89, 53, 0.25);
+  border-radius: 7px;
+
+  background: rgba(255, 89, 53, 0.05);
+}
+
+.jd-error strong {
+  color: #ff7b58;
+
+  font-size: 9px;
+}
+
+.jd-error span {
+  flex: 1;
+
+  color: #a68f83;
+
+  font-size: 8px;
+}
+
+.jd-error button {
+  padding: 0;
+
+  border: 0;
+
+  background: none;
+
+  color: #ff6b18;
+
+  font-family: inherit;
+  font-size: 8px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+/* =========================================================
+   FILTERS
+   ========================================================= */
+
+.jd-filters {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 9px;
+
+  margin-bottom: 11px;
+}
+
+.jd-filter {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.jd-filter-label {
+  color: #665850;
+
+  font-size: 6px;
+  font-weight: 900;
+
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.jd-filter-control {
+  position: relative;
+
+  min-width: 0;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+
+  border: 1px solid #382b24;
+  border-radius: 7px;
+
+  background: #1d1714;
+
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.jd-filter-control:hover {
+  background: #201915;
+
+  border-color: #48352c;
+}
+
+.jd-filter-control:focus-within {
+  border-color: #ff6b18;
+}
+
+.jd-filter-icon {
+  width: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  color: #ff6b18;
+}
+
+.jd-filter select {
+  min-width: 0;
+
+  width: 100%;
+  height: 100%;
+
+  appearance: none;
+
+  padding: 0 30px 0 0;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: #dfd2c8;
+
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.jd-filter select option {
+  background: #1d1714;
+
+  color: #fff8e8;
+}
+
+.jd-filter-chevron {
+  position: absolute;
+
+  right: 9px;
+
+  pointer-events: none;
+
+  color: #74665e;
+}
+
+/* =========================================================
+   STAT CARDS
+   ========================================================= */
+
+.jd-stats {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 8px;
+
+  margin-bottom: 10px;
+}
+
+.jd-stat-card {
+  min-width: 0;
+  min-height: 76px;
+
+  padding: 10px 11px;
+
+  border: 1px solid #382b24;
+  border-radius: 7px;
+
+  background: #1d1714;
+
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.jd-stat-card:hover {
+  border-color: #49362d;
+
+  background: #201915;
+}
+
+.jd-stat-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 7px;
+}
+
+.jd-stat-top > span {
+  color: #695b53;
+
+  font-size: 6px;
+  font-weight: 900;
+
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.jd-stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #ff6b18;
+}
+
+.jd-stat-card strong {
+  display: block;
+
+  min-width: 0;
+
+  overflow: hidden;
+
+  color: #fff8e8;
+
+  font-size: 16px;
+  line-height: 1.1;
+
+  font-weight: 900;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.jd-stat-card small {
+  display: block;
+
+  margin-top: 4px;
+
+  color: #756960;
+
+  font-size: 7px;
+  line-height: 1.2;
+}
+
+/* =========================================================
+   DATA GRID
+   ========================================================= */
+
+.jd-data-grid {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.65fr)
+    minmax(280px, 0.9fr);
+
+  gap: 9px;
+
+  width: 100%;
+}
+
+.jd-panel {
+  min-width: 0;
+
+  padding: 13px;
+
+  border: 1px solid #382b24;
+  border-radius: 7px;
+
+  background: #1d1714;
+}
+
+/* =========================================================
+   PANEL HEADER
+   ========================================================= */
+
+.jd-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin-bottom: 15px;
+}
+
+.jd-panel-header p {
+  margin: 0 0 3px;
+
+  color: #ff6b18;
+
+  font-size: 6px;
+  font-weight: 900;
+
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.jd-panel-header h2 {
+  margin: 0;
+
+  color: #fff8e8;
+
+  font-size: 13px;
+  line-height: 1.1;
+
+  font-weight: 800;
+}
+
+.jd-panel-header > span {
+  flex-shrink: 0;
+
+  color: #665850;
+
+  font-size: 7px;
+}
+
+/* CODE ICON */
+
+.jd-panel-code {
+  width: 25px;
+  height: 25px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 6px;
+
+  background: rgba(255, 107, 24, 0.07);
+
+  color: #ff6b18;
+}
+
+/* =========================================================
+   PROJECT DURATIONS
+   ========================================================= */
+
+.jd-project-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+}
+
+.jd-project-row {
+  min-width: 0;
+
+  display: grid;
+
+  grid-template-columns:
+    103px
+    minmax(60px, 1fr)
+    42px;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+.jd-project-name {
+  min-width: 0;
+
+  overflow: hidden;
+
+  color: #d6c8bd;
+
+  font-size: 8px;
+  font-weight: 600;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.jd-bar {
+  width: 100%;
+  height: 6px;
+
+  overflow: hidden;
+
+  border-radius: 99px;
+
+  background: #332821;
+}
+
+.jd-bar-fill {
+  height: 100%;
+  min-width: 2px;
+
+  border-radius: inherit;
+
+  background: #ff6b18;
+
+  transition: width 0.25s ease;
+}
+
+.jd-project-time {
+  color: #9a867b;
+
+  font-size: 7px;
+  font-weight: 600;
+
+  text-align: right;
+
+  white-space: nowrap;
+}
+
+/* =========================================================
+   LANGUAGES
+   ========================================================= */
+
+.jd-language-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+}
+
+.jd-language-row {
+  min-width: 0;
+
+  display: grid;
+
+  grid-template-columns:
+    70px
+    minmax(60px, 1fr)
+    42px;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+.jd-language-row > span {
+  min-width: 0;
+
+  overflow: hidden;
+
+  color: #d6c8bd;
+
+  font-size: 8px;
+  font-weight: 600;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.jd-language-bar {
+  width: 100%;
+  height: 6px;
+
+  overflow: hidden;
+
+  border-radius: 99px;
+
+  background: #332821;
+}
+
+.jd-language-bar > div {
+  height: 100%;
+  min-width: 2px;
+
+  border-radius: inherit;
+
+  background: linear-gradient(
+    90deg,
+    #ffd928 0%,
+    #ff6b18 100%
+  );
+
+  transition: width 0.25s ease;
+}
+
+.jd-language-row strong {
+  color: #9a867b;
+
+  font-size: 7px;
+  font-weight: 600;
+
+  text-align: right;
+
+  white-space: nowrap;
+}
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.jd-empty {
+  padding: 25px 6px;
+
+  color: #756960;
+
+  font-size: 9px;
+
+  text-align: center;
+}
+
+/* =========================================================
+   ACCOUNT STRIP
+   ========================================================= */
+
+.jd-account-strip {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  margin-top: 9px;
+  padding: 10px 12px;
+
+  border: 1px solid #382b24;
+  border-radius: 7px;
+
+  background: #1d1714;
+}
+
+.jd-account-avatar {
+  width: 32px;
+  height: 32px;
+
+  flex: 0 0 32px;
+
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #28201b;
+  border: 1px solid #3a2d26;
+
+  color: #ff6b18;
+}
+
+.jd-account-avatar img {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+}
+
+.jd-account-strip > div:nth-child(2) {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 1px;
+}
+
+.jd-account-strip strong {
+  overflow: hidden;
+
+  color: #fff8e8;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.jd-account-strip span {
+  overflow: hidden;
+
+  color: #756960;
+
+  font-size: 8px;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.jd-account-strip > a {
+  flex-shrink: 0;
+
+  margin-left: auto;
+
+  color: #ff6b18;
+
+  font-size: 8px;
+  font-weight: 800;
+
+  text-decoration: none;
+}
+
+.jd-account-strip > a:hover {
+  text-decoration: underline;
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1050px) {
+  .jd-sidebar {
+    width: 165px;
+  }
+
+  .jd-main {
+    width: calc(100% - 165px);
+
+    margin-left: 165px;
+
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+
+  .jd-data-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   SMALL TABLET
+   ========================================================= */
+
+@media (max-width: 800px) {
+  .jd-stats {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .jd-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .jd-header {
+    flex-direction: column;
+  }
+
+  .jd-refresh {
+    align-self: flex-start;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 620px) {
+  .jd-dashboard {
+    display: block;
+  }
+
+  .jd-sidebar {
+    position: static;
+
+    width: 100%;
+    min-height: auto;
+
+    display: block;
+
+    padding: 12px;
+
+    border-right: 0;
+    border-bottom: 1px solid
+      rgba(255, 248, 232, 0.07);
+  }
+
+  .jd-brand {
+    padding-bottom: 12px;
+  }
+
+  .jd-nav {
+    display: grid;
+
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+
+    gap: 5px;
+  }
+
+  .jd-nav-item {
+    justify-content: center;
+
+    padding: 0 5px;
+  }
+
+  .jd-sidebar-spacer {
+    display: none;
+  }
+
+  .jd-profile {
+    margin-top: 10px;
+  }
+
+  .jd-logout {
+    padding-bottom: 2px;
+  }
+
+  .jd-main {
+    width: 100%;
+
+    margin-left: 0;
+
+    padding: 18px 12px 30px;
+  }
+
+  .jd-header h1 {
+    font-size: 29px;
+  }
+
+  .jd-description {
+    font-size: 9px;
+  }
+
+  .jd-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .jd-data-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .jd-project-row {
+    grid-template-columns:
+      90px
+      minmax(50px, 1fr)
+      40px;
+  }
+
+  .jd-language-row {
+    grid-template-columns:
+      65px
+      minmax(50px, 1fr)
+      40px;
+  }
+
+  .jd-account-strip {
+    align-items: flex-start;
+  }
+}
+
+/* =========================================================
+   VERY SMALL SCREENS
+   ========================================================= */
+
+@media (max-width: 400px) {
+  .jd-nav-item span {
+    font-size: 9px;
+  }
+
+  .jd-project-row {
+    grid-template-columns:
+      78px
+      minmax(40px, 1fr)
+      37px;
+
+    gap: 6px;
+  }
+
+  .jd-language-row {
+    grid-template-columns:
+      58px
+      minmax(40px, 1fr)
+      37px;
+
+    gap: 6px;
+  }
+
+  .jd-project-name,
+  .jd-language-row > span {
+    font-size: 7px;
+  }
+}
