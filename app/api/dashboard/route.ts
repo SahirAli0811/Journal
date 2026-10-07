@@ -32,7 +32,6 @@ function getDateRange(range: string) {
   } else if (range === "week") {
     const day = start.getDay();
     const diff = day === 0 ? 6 : day - 1;
-
     start.setDate(start.getDate() - diff);
     start.setHours(0, 0, 0, 0);
   } else if (range === "month") {
@@ -42,8 +41,6 @@ function getDateRange(range: string) {
     start.setMonth(0, 1);
     start.setHours(0, 0, 0, 0);
   } else {
-    // Hackatime's hours endpoint requires a date.
-    // Use a very early date for "all time".
     start.setFullYear(2000, 0, 1);
     start.setHours(0, 0, 0, 0);
   }
@@ -64,10 +61,7 @@ function safeNumber(value: unknown) {
   return number;
 }
 
-function getString(
-  value: unknown,
-  fallback: string | null = null
-): string | null {
+function getString(value: unknown,fallback: string | null = null): string | null {
   if (typeof value !== "string") {
     return fallback;
   }
@@ -81,10 +75,6 @@ function getString(
 
 export async function GET(request: NextRequest) {
   try {
-    // ---------------------------------------------------------
-    // JOURNAL USER
-    // ---------------------------------------------------------
-
     const userId = request.cookies.get("journal_user_id")?.value;
 
     if (!userId) {
@@ -95,16 +85,6 @@ export async function GET(request: NextRequest) {
         { status: 401 }
       );
     }
-
-    // ---------------------------------------------------------
-    // LOAD USER
-    //
-    // select("*") is intentional here.
-    // Your Supabase schema has evolved during development
-    // (for example avatar_url / hackatime_user_id), so we
-    // don't want the dashboard to fail because an older column
-    // name was used.
-    // ---------------------------------------------------------
 
     const { data: user, error: userError } = await supabase
       .from("users")
@@ -123,14 +103,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // ---------------------------------------------------------
-    // HACKATIME TOKEN
-    // ---------------------------------------------------------
-
-    const hackatimeToken =
-      user.hackatime_access_token ??
-      user.hackatime_token ??
-      null;
+    const hackatimeToken = user.hackatime_access_token ?? user.hackatime_token ?? null;
 
     if (!hackatimeToken) {
       return NextResponse.json(
@@ -141,33 +114,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // ---------------------------------------------------------
-    // FILTERS
-    // ---------------------------------------------------------
+    const range = request.nextUrl.searchParams.get("range") || "all";
 
-    const range =
-      request.nextUrl.searchParams.get("range") || "all";
+    const selectedProject = request.nextUrl.searchParams.get("project") || "all";
 
-    const selectedProject =
-      request.nextUrl.searchParams.get("project") || "all";
-
-    const selectedLanguage =
-      request.nextUrl.searchParams.get("language") || "all";
+    const selectedLanguage = request.nextUrl.searchParams.get("language") || "all";
 
     const dateRange = getDateRange(range);
-
-    // ---------------------------------------------------------
-    // HACKATIME HEADERS
-    // ---------------------------------------------------------
 
     const headers = {
       Authorization: `Bearer ${hackatimeToken}`,
       Accept: "application/json",
     };
-
-    // ---------------------------------------------------------
-    // HACKATIME API
-    // ---------------------------------------------------------
 
     const [
       meResponse,
@@ -208,10 +166,6 @@ export async function GET(request: NextRequest) {
       ),
     ]);
 
-    // ---------------------------------------------------------
-    // PARSE ME
-    // ---------------------------------------------------------
-
     let hackatimeProfile: HackatimeUser = {};
 
     if (meResponse.ok) {
@@ -226,10 +180,6 @@ export async function GET(request: NextRequest) {
         meResponse.status
       );
     }
-
-    // ---------------------------------------------------------
-    // PARSE PROJECTS
-    // ---------------------------------------------------------
 
     let projectsData: {
       projects?: HackatimeProject[];
@@ -257,10 +207,6 @@ export async function GET(request: NextRequest) {
       (project) => !project.archived
     );
 
-    // ---------------------------------------------------------
-    // PARSE HOURS
-    // ---------------------------------------------------------
-
     let hoursData: HackatimeHours = {};
 
     if (hoursResponse.ok) {
@@ -280,10 +226,6 @@ export async function GET(request: NextRequest) {
       hoursData.total_seconds
     );
 
-    // ---------------------------------------------------------
-    // PARSE STREAK
-    // ---------------------------------------------------------
-
     let streakData: {
       streak_days?: number;
     } = {};
@@ -299,10 +241,6 @@ export async function GET(request: NextRequest) {
     const streakDays = safeNumber(
       streakData.streak_days
     );
-
-    // ---------------------------------------------------------
-    // PROJECT FILTER
-    // ---------------------------------------------------------
 
     let visibleProjects = [...activeProjects];
 
@@ -322,18 +260,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // ---------------------------------------------------------
-    // PROJECT BREAKDOWN
-    //
-    // IMPORTANT:
-    // Hackatime's documented /projects endpoint gives
-    // project totals, not date-filtered project totals.
-    //
-    // Therefore these bars are all-time project totals.
-    // The Total Time card below is correctly date filtered
-    // through /hours.
-    // ---------------------------------------------------------
-
     const projectDurations = visibleProjects
       .map((project) => ({
         name: project.name,
@@ -343,10 +269,6 @@ export async function GET(request: NextRequest) {
       }))
       .sort((a, b) => b.seconds - a.seconds)
       .slice(0, 12);
-
-    // ---------------------------------------------------------
-    // LANGUAGE BREAKDOWN
-    // ---------------------------------------------------------
 
     const languageMap = new Map<
       string,
@@ -383,10 +305,6 @@ export async function GET(request: NextRequest) {
       .sort((a, b) => b.seconds - a.seconds)
       .slice(0, 12);
 
-    // ---------------------------------------------------------
-    // FILTER OPTIONS
-    // ---------------------------------------------------------
-
     const projectOptions = Array.from(
       new Set(
         activeProjects
@@ -407,18 +325,6 @@ export async function GET(request: NextRequest) {
     ).sort((a, b) =>
       a.localeCompare(b)
     );
-
-    // ---------------------------------------------------------
-    // PROFILE
-    //
-    // Your current database has used:
-    // name
-    // avatar_url
-    // github_user_id
-    // hackatime_user_id
-    //
-    // We support both your newer and older column names.
-    // ---------------------------------------------------------
 
     const firstName =
       getString(
@@ -468,19 +374,11 @@ export async function GET(request: NextRequest) {
       getString(user.hackclub_slack_id) ??
       getString(hackatimeProfile.slack_id);
 
-    // ---------------------------------------------------------
-    // TOP PROJECT
-    // ---------------------------------------------------------
-
     const topProject =
       projectDurations[0] || null;
 
     const topLanguage =
       languageBreakdown[0] || null;
-
-    // ---------------------------------------------------------
-    // RESPONSE
-    // ---------------------------------------------------------
 
     return NextResponse.json({
       profile: {
@@ -505,7 +403,6 @@ export async function GET(request: NextRequest) {
       },
 
       stats: {
-        // THIS is the important date-filtered value.
         totalSeconds,
 
         topProject: topProject
@@ -533,7 +430,6 @@ export async function GET(request: NextRequest) {
 
       languages: languageBreakdown,
 
-      // Kept only as metadata if you want to use it later.
       latestHeartbeat: null,
 
       dateRange: {

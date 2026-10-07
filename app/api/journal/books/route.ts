@@ -1,100 +1,55 @@
-import {
-  NextRequest,
-  NextResponse,
-} from "next/server";
-
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { supabase } from "@/lib/supabase/supabase";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 type CreateBookBody = {
   name?: string;
   ysws?: string;
-  githubRepo?: string;
-  githubUrl?: string | null;
   trackingMode?: "hackatime" | "manual";
   hackatimeProject?: string | null;
+  githubRepo?: string;
+  githubUrl?: string | null;
 };
 
-function clean(
-  value: unknown
-) {
-  return typeof value === "string"
-    ? value.trim()
-    : "";
+type HackatimeProject = {
+  name?: string;
+  total_seconds?: number;
+  archived?: boolean;
+};
+
+function jsonResponse(data: unknown, status = 200) {
+  return NextResponse.json(data, {
+    status,
+    headers: {
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+    },
+  });
 }
 
-async function getHackatimeProject(
-  token: string,
-  projectName: string
-) {
-  const response = await fetch(
-    "https://hackatime.hackclub.com/api/v1/authenticated/projects?include_archived=false",
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      },
-      cache: "no-store",
-    }
-  );
+function getUserId() {
+  const cookieStore = cookies();
 
-  if (!response.ok) {
-    const text =
-      await response.text();
-
-    console.error(
-      "Hackatime projects error:",
-      text
-    );
-
-    throw new Error(
-      "Could not load Hackatime projects."
-    );
-  }
-
-  const data =
-    await response.json();
-
-  const projects =
-    Array.isArray(data?.projects)
-      ? data.projects
-      : [];
-
-  return (
-    projects.find(
-      (project: {
-        name?: string;
-      }) =>
-        project.name ===
-        projectName
-    ) || null
-  );
+  return cookieStore.get("journal_user_id")?.value ?? null;
 }
 
-export async function GET(
-  request: NextRequest
-) {
+export async function GET() {
   try {
-    const userId =
-      request.cookies.get(
-        "journal_user_id"
-      )?.value;
+    const userId = getUserId();
 
     if (!userId) {
-      return NextResponse.json(
+      return jsonResponse(
         {
-          error:
-            "Not authenticated",
+          error: "Not authenticated.",
+          books: [],
         },
-        {
-          status: 401,
-        }
+        401
       );
     }
 
-    const {
-      data,
-      error,
-    } = await supabase
+    const { data: books, error } = await supabase
       .from("journal_books")
       .select("*")
       .eq("user_id", userId)
@@ -103,253 +58,261 @@ export async function GET(
       });
 
     if (error) {
-      console.error(
-        "journal_books GET:",
-        error
-      );
+      console.error("Journal books GET error:", error);
 
-      return NextResponse.json(
+      return jsonResponse(
         {
-          error:
-            error.message,
+          error: "Failed to load journal books.",
+          details: error.message,
+          books: [],
         },
-        {
-          status: 500,
-        }
+        500
       );
     }
 
-    return NextResponse.json({
-      books: data || [],
+    return jsonResponse({
+      books: books ?? [],
     });
   } catch (error) {
-    console.error(
-      "journal_books GET exception:",
-      error
-    );
+    console.error("Journal books GET exception:", error);
 
-    return NextResponse.json(
+    return jsonResponse(
       {
         error:
           error instanceof Error
             ? error.message
-            : "Failed to load books.",
+            : "Failed to load journal books.",
+        books: [],
       },
-      {
-        status: 500,
-      }
+      500
     );
   }
 }
 
-export async function POST(
-  request: NextRequest
-) {
+export async function POST(request: Request) {
   try {
-    const userId =
-      request.cookies.get(
-        "journal_user_id"
-      )?.value;
+    const userId = getUserId();
 
     if (!userId) {
-      return NextResponse.json(
+      return jsonResponse(
         {
-          error:
-            "Not authenticated",
+          error: "Not authenticated.",
         },
-        {
-          status: 401,
-        }
+        401
       );
     }
 
-    const body =
-      (await request.json()) as CreateBookBody;
+    let body: CreateBookBody;
 
-    const name =
-      clean(body.name);
+    try {
+      body = (await request.json()) as CreateBookBody;
+    } catch {
+      return jsonResponse(
+        {
+          error: "Invalid JSON request body.",
+        },
+        400
+      );
+    }
 
-    const ysws =
-      clean(body.ysws);
-
-    const githubRepo =
-      clean(body.githubRepo);
-
-    const githubUrl =
-      clean(body.githubUrl);
+    const name = body.name?.trim() ?? "";
+    const ysws = body.ysws?.trim() ?? "";
+    const githubRepo = body.githubRepo?.trim() ?? "";
+    const githubUrl = body.githubUrl?.trim() || null;
 
     const trackingMode =
-      body.trackingMode ===
-      "manual"
+      body.trackingMode === "manual"
         ? "manual"
         : "hackatime";
 
     const hackatimeProject =
-      clean(
-        body.hackatimeProject
-      );
+      body.hackatimeProject?.trim() || null;
 
     if (!name) {
-      return NextResponse.json(
+      return jsonResponse(
         {
-          error:
-            "Project name is required.",
+          error: "Project name is required.",
         },
-        {
-          status: 400,
-        }
+        400
       );
     }
 
     if (!ysws) {
-      return NextResponse.json(
+      return jsonResponse(
         {
-          error:
-            "YSWS / Shipping On is required.",
+          error: "YSWS / shipping program is required.",
         },
-        {
-          status: 400,
-        }
+        400
       );
     }
 
     if (!githubRepo) {
-      return NextResponse.json(
+      return jsonResponse(
         {
-          error:
-            "GitHub repository is required.",
+          error: "GitHub repository is required.",
         },
-        {
-          status: 400,
-        }
+        400
       );
     }
 
     if (
-      trackingMode ===
-        "hackatime" &&
+      trackingMode === "hackatime" &&
       !hackatimeProject
     ) {
-      return NextResponse.json(
+      return jsonResponse(
         {
           error:
-            "Select a Hackatime project.",
+            "Hackatime project is required when using Hackatime tracking.",
         },
-        {
-          status: 400,
-        }
+        400
       );
     }
-
-    /*
-     * Get the current user.
-     *
-     * We intentionally use select("*") here because
-     * your users table has evolved and already contains
-     * the integration columns.
-     */
 
     const {
       data: user,
       error: userError,
     } = await supabase
       .from("users")
-      .select("*")
+      .select(
+        "id, github_access_token, github_connected, hackatime_access_token, hackatime_connected"
+      )
       .eq("id", userId)
       .single();
 
-    if (
-      userError ||
-      !user
-    ) {
+    if (userError) {
       console.error(
-        "users lookup:",
+        "Journal books user lookup error:",
         userError
       );
 
-      return NextResponse.json(
+      return jsonResponse(
         {
-          error:
-            "User account not found.",
+          error: "Failed to load your account.",
+          details: userError.message,
         },
-        {
-          status: 404,
-        }
+        500
       );
     }
 
-    /*
-     * GitHub is required for every book.
-     */
-
-    const githubToken =
-      user.github_access_token;
-
-    if (!githubToken) {
-      return NextResponse.json(
+    if (!user) {
+      return jsonResponse(
         {
-          error:
-            "GitHub is not connected. Connect GitHub from your Profile first.",
+          error: "User account not found.",
         },
-        {
-          status: 400,
-        }
+        404
       );
     }
 
-    /*
-     * Hackatime is optional.
-     */
-
-    let initialSeconds = 0;
-
-    if (
-      trackingMode ===
-      "hackatime"
-    ) {
-      const hackatimeToken =
-        user.hackatime_access_token;
-
-      if (!hackatimeToken) {
-        return NextResponse.json(
-          {
-            error:
-              "Hackatime is not connected.",
-          },
-          {
-            status: 400,
-          }
-        );
-      }
-
-      const selectedProject =
-        await getHackatimeProject(
-          hackatimeToken,
-          hackatimeProject
-        );
-
-      if (!selectedProject) {
-        return NextResponse.json(
-          {
-            error:
-              "The selected Hackatime project was not found.",
-          },
-          {
-            status: 400,
-          }
-        );
-      }
-
-      initialSeconds =
-        Number(
-          selectedProject.total_seconds ||
-            0
-        );
+    if (!user.github_access_token) {
+      return jsonResponse(
+        {
+          error:
+            "GitHub is not connected. Reconnect GitHub from your Profile page.",
+        },
+        400
+      );
     }
 
-    /*
-     * Create the book.
-     */
+    let initialHackatimeSeconds = 0;
+
+    if (trackingMode === "hackatime") {
+      if (!user.hackatime_access_token) {
+        return jsonResponse(
+          {
+            error:
+              "Hackatime is not connected. Reconnect Hackatime from your Profile page.",
+          },
+          400
+        );
+      }
+
+      try {
+        const response = await fetch(
+          "https://hackatime.hackclub.com/api/v1/authenticated/projects?include_archived=false",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${user.hackatime_access_token}`,
+              Accept: "application/json",
+            },
+            cache: "no-store",
+          }
+        );
+
+        const text = await response.text();
+
+        let data: unknown = null;
+
+        if (text.trim()) {
+          try {
+            data = JSON.parse(text);
+          } catch {
+            data = null;
+          }
+        }
+
+        if (!response.ok) {
+          console.error(
+            "Hackatime projects error:",
+            response.status,
+            text
+          );
+
+          return jsonResponse(
+            {
+              error:
+                "Failed to read your Hackatime projects.",
+            },
+            502
+          );
+        }
+
+        let projects: HackatimeProject[] = [];
+
+        if (Array.isArray(data)) {
+          projects = data as HackatimeProject[];
+        } else if (
+          data &&
+          typeof data === "object"
+        ) {
+          const objectData = data as {
+            projects?: HackatimeProject[];
+            data?: HackatimeProject[];
+          };
+
+          if (Array.isArray(objectData.projects)) {
+            projects = objectData.projects;
+          } else if (Array.isArray(objectData.data)) {
+            projects = objectData.data;
+          }
+        }
+
+        const selectedProject = projects.find(
+          (project) =>
+            project.name?.trim() === hackatimeProject
+        );
+
+        if (selectedProject) {
+          initialHackatimeSeconds =
+            Number(
+              selectedProject.total_seconds ?? 0
+            );
+        }
+      } catch (error) {
+        console.error(
+          "Hackatime request error:",
+          error
+        );
+
+        return jsonResponse(
+          {
+            error:
+              "Unable to contact Hackatime while creating the journal book.",
+          },
+          502
+        );
+      }
+    }
 
     const {
       data: book,
@@ -358,78 +321,58 @@ export async function POST(
       .from("journal_books")
       .insert({
         user_id: userId,
-
         name,
-
         ysws,
-
-        github_repo:
-          githubRepo,
-
-        github_url:
-          githubUrl || null,
-
-        tracking_mode:
-          trackingMode,
-
+        github_repo: githubRepo,
+        github_url: githubUrl,
+        tracking_mode: trackingMode,
         hackatime_project:
-          trackingMode ===
-          "hackatime"
+          trackingMode === "hackatime"
             ? hackatimeProject
             : null,
-
         last_hackatime_seconds:
-          initialSeconds,
+          initialHackatimeSeconds,
       })
       .select("*")
       .single();
 
-    if (
-      insertError ||
-      !book
-    ) {
+    if (insertError) {
       console.error(
-        "journal_books INSERT:",
+        "Journal book INSERT error:",
         insertError
       );
 
-      return NextResponse.json(
+      return jsonResponse(
         {
           error:
-            insertError?.message ||
-            "Could not create the journal book.",
+            insertError.message ||
+            "Failed to create journal book.",
         },
-        {
-          status: 500,
-        }
+        500
       );
     }
 
-    return NextResponse.json(
+    return jsonResponse(
       {
         success: true,
         book,
       },
-      {
-        status: 201,
-      }
+      201
     );
   } catch (error) {
     console.error(
-      "journal_books POST exception:",
+      "Journal book POST error:",
       error
     );
 
-    return NextResponse.json(
+    return jsonResponse(
       {
         error:
           error instanceof Error
             ? error.message
             : "Failed to create journal book.",
       },
-      {
-        status: 500,
-      }
+      500
     );
   }
 }

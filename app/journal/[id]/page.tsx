@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ChangeEvent,
   useEffect,
   useMemo,
   useRef,
@@ -15,6 +16,7 @@ import {
   CalendarDays,
   Check,
   CheckSquare,
+  Clock3,
   Code2,
   CodeXml,
   Heading1,
@@ -34,7 +36,7 @@ import {
   Table2,
   Trash2,
   User,
-  Clock3,
+  X,
 } from "lucide-react";
 
 import "./editor.css";
@@ -46,17 +48,22 @@ type Book = {
   ysws: string;
   github_repo: string;
   github_url?: string | null;
+
   tracking_mode:
     | "hackatime"
     | "manual";
+
   hackatime_project?: string | null;
+
   last_hackatime_seconds?: number;
+
   created_at?: string;
   updated_at?: string;
 };
 
 type BookResponse = {
   book: Book;
+
   time: {
     currentSeconds: number;
     newSeconds: number;
@@ -74,20 +81,15 @@ type ManualSession = {
 function getToday() {
   const now = new Date();
 
-  const year =
-    now.getFullYear();
-
-  const month =
+  return [
+    now.getFullYear(),
     String(
       now.getMonth() + 1
-    ).padStart(2, "0");
-
-  const day =
+    ).padStart(2, "0"),
     String(
       now.getDate()
-    ).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
+    ).padStart(2, "0"),
+  ].join("-");
 }
 
 function formatTime(
@@ -245,6 +247,9 @@ export default function JournalEditorPage({
   const [saving, setSaving] =
     useState(false);
 
+  const [deleting, setDeleting] =
+    useState(false);
+
   const [saved, setSaved] =
     useState(false);
 
@@ -286,12 +291,6 @@ export default function JournalEditorPage({
   const [imageTwoPreview, setImageTwoPreview] =
     useState("");
 
-  /*
-   * ---------------------------------------------------------
-   * THEME
-   * ---------------------------------------------------------
-   */
-
   useEffect(() => {
     const savedTheme =
       window.localStorage.getItem(
@@ -304,11 +303,6 @@ export default function JournalEditorPage({
         : "dark";
   }, []);
 
-  /*
-   * ---------------------------------------------------------
-   * LOAD BOOK
-   * ---------------------------------------------------------
-   */
 
   useEffect(() => {
     async function loadBook() {
@@ -361,9 +355,7 @@ export default function JournalEditorPage({
         const result =
           data as BookResponse;
 
-        setBook(
-          result.book
-        );
+        setBook(result.book);
 
         setCurrentSeconds(
           Number(
@@ -397,12 +389,6 @@ export default function JournalEditorPage({
     loadBook();
   }, [params.id]);
 
-  /*
-   * ---------------------------------------------------------
-   * MANUAL TIME
-   * ---------------------------------------------------------
-   */
-
   const manualSeconds =
     useMemo(() => {
       return sessions.reduce(
@@ -426,6 +412,7 @@ export default function JournalEditorPage({
         0
       );
     }, [sessions]);
+
 
   function restoreSelection(
     start: number,
@@ -626,7 +613,7 @@ export default function JournalEditorPage({
   }
 
   function handleImage(
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: ChangeEvent<HTMLInputElement>,
     slot: 1 | 2
   ) {
     const file =
@@ -699,7 +686,16 @@ export default function JournalEditorPage({
 
       if (!content.trim()) {
         throw new Error(
-          "Write something before saving."
+          "Write something before publishing."
+        );
+      }
+
+      if (
+        !imageOne ||
+        !imageTwo
+      ) {
+        throw new Error(
+          "Please add both images before publishing."
         );
       }
 
@@ -712,12 +708,6 @@ export default function JournalEditorPage({
           "Add some manual time first."
         );
       }
-
-      /*
-       * For now this saves through the
-       * database/API once the publish
-       * endpoint is connected.
-       */
 
       const formData =
         new FormData();
@@ -747,19 +737,15 @@ export default function JournalEditorPage({
         )
       );
 
-      if (imageOne) {
-        formData.append(
-          "image1",
-          imageOne
-        );
-      }
+      formData.append(
+        "image1",
+        imageOne
+      );
 
-      if (imageTwo) {
-        formData.append(
-          "image2",
-          imageTwo
-        );
-      }
+      formData.append(
+        "image2",
+        imageTwo
+      );
 
       const response =
         await fetch(
@@ -820,10 +806,83 @@ export default function JournalEditorPage({
       setError(
         err instanceof Error
           ? err.message
-          : "Could not save journal."
+          : "Could not publish journal."
       );
     } finally {
       setSaving(false);
+    }
+  }
+
+
+  async function deleteBook() {
+    if (!book) {
+      return;
+    }
+
+    const confirmed =
+      window.confirm(
+        `Delete the "${book.name}" journal?\n\nThis removes the Journal book and its saved entries from Journal. Files already published to GitHub will stay there.`
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setDeleting(true);
+      setError("");
+
+      const response =
+        await fetch(
+          `/api/journal/books/${params.id}`,
+          {
+            method: "DELETE",
+          }
+        );
+
+      const contentType =
+        response.headers.get(
+          "content-type"
+        ) || "";
+
+      const text =
+        await response.text();
+
+      if (
+        !contentType.includes(
+          "application/json"
+        )
+      ) {
+        throw new Error(
+          `Delete API returned ${response.status}.`
+        );
+      }
+
+      const result =
+        JSON.parse(text);
+
+      if (!response.ok) {
+        throw new Error(
+          result?.error ||
+            "Could not delete journal."
+        );
+      }
+
+      window.location.href =
+        "/journal";
+    } catch (err) {
+      console.error(
+        "Delete journal error:",
+        err
+      );
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Could not delete journal."
+      );
+
+      setDeleting(false);
     }
   }
 
@@ -841,9 +900,7 @@ export default function JournalEditorPage({
     return (
       <main className="je-page">
         <div className="je-error-page">
-          <BookOpen
-            size={30}
-          />
+          <BookOpen size={30} />
 
           <h1>
             Journal not found
@@ -855,9 +912,7 @@ export default function JournalEditorPage({
           </p>
 
           <a href="/journal">
-            <ArrowLeft
-              size={14}
-            />
+            <ArrowLeft size={14} />
             Back to Journal
           </a>
         </div>
@@ -870,9 +925,7 @@ export default function JournalEditorPage({
       <aside className="je-sidebar">
         <div className="je-brand">
           <div className="je-brand-icon">
-            <BookOpen
-              size={17}
-            />
+            <BookOpen size={17} />
           </div>
 
           <span>
@@ -885,9 +938,8 @@ export default function JournalEditorPage({
             href="/dashboard"
             className="je-nav-item"
           >
-            <BarChart3
-              size={16}
-            />
+            <BarChart3 size={16} />
+
             <span>
               Dashboard
             </span>
@@ -897,9 +949,8 @@ export default function JournalEditorPage({
             href="/journal"
             className="je-nav-item je-nav-active"
           >
-            <BookOpen
-              size={16}
-            />
+            <BookOpen size={16} />
+
             <span>
               Journal
             </span>
@@ -909,9 +960,8 @@ export default function JournalEditorPage({
             href="/profile"
             className="je-nav-item"
           >
-            <Settings
-              size={16}
-            />
+            <Settings size={16} />
+
             <span>
               Settings
             </span>
@@ -942,9 +992,8 @@ export default function JournalEditorPage({
             href="/api/auth/logout"
             className="je-logout"
           >
-            <LogOut
-              size={15}
-            />
+            <LogOut size={15} />
+
             <span>
               Logout
             </span>
@@ -959,9 +1008,7 @@ export default function JournalEditorPage({
               href="/journal"
               className="je-back"
             >
-              <ArrowLeft
-                size={15}
-              />
+              <ArrowLeft size={15} />
               Journal
             </a>
           </div>
@@ -980,25 +1027,59 @@ export default function JournalEditorPage({
             </p>
           </div>
 
-          <button
-            type="button"
-            className="je-save-top"
-            onClick={saveEntry}
-            disabled={saving}
-          >
-            {saving ? (
-              <LoaderCircle
-                size={15}
-                className="je-spin"
-              />
-            ) : (
-              <Save size={15} />
-            )}
+          <div className="je-header-actions">
+            <button
+              type="button"
+              className="je-delete-top"
+              onClick={
+                deleteBook
+              }
+              disabled={
+                deleting ||
+                saving
+              }
+              title="Delete Journal"
+              aria-label="Delete Journal"
+            >
+              {deleting ? (
+                <LoaderCircle
+                  size={15}
+                  className="je-spin"
+                />
+              ) : (
+                <X size={17} />
+              )}
 
-            {saving
-              ? "Publishing..."
-              : "Save & Publish"}
-          </button>
+              <span>
+                Delete
+              </span>
+            </button>
+
+            <button
+              type="button"
+              className="je-save-top"
+              onClick={
+                saveEntry
+              }
+              disabled={
+                saving ||
+                deleting
+              }
+            >
+              {saving ? (
+                <LoaderCircle
+                  size={15}
+                  className="je-spin"
+                />
+              ) : (
+                <Save size={15} />
+              )}
+
+              {saving
+                ? "Publishing..."
+                : "Save & Publish"}
+            </button>
+          </div>
         </header>
 
         {error ? (
@@ -1010,7 +1091,8 @@ export default function JournalEditorPage({
         {saved ? (
           <div className="je-alert je-alert-success">
             <Check size={15} />
-            Journal published successfully.
+
+            Published to GitHub successfully.
           </div>
         ) : null}
 
@@ -1028,7 +1110,8 @@ export default function JournalEditorPage({
               </strong>
 
               <p>
-                {newSeconds > 0
+                {newSeconds >
+                0
                   ? `You have ${formatTime(
                       newSeconds
                     )} of new coding time since your last entry. Write about what you worked on.`
@@ -1094,9 +1177,7 @@ export default function JournalEditorPage({
             </div>
 
             <label className="je-date">
-              <CalendarDays
-                size={14}
-              />
+              <CalendarDays size={14} />
 
               <input
                 type="date"
@@ -1428,6 +1509,11 @@ export default function JournalEditorPage({
                           session.id
                         )
                       }
+                      disabled={
+                        sessions.length <=
+                        1
+                      }
+                      title="Remove session"
                     >
                       <Trash2 />
                     </button>
@@ -1486,6 +1572,7 @@ export default function JournalEditorPage({
 
                       removeImage(1);
                     }}
+                    title="Remove image"
                   >
                     <Trash2 />
                   </button>
@@ -1533,6 +1620,7 @@ export default function JournalEditorPage({
 
                       removeImage(2);
                     }}
+                    title="Remove image"
                   >
                     <Trash2 />
                   </button>
@@ -1576,19 +1664,24 @@ export default function JournalEditorPage({
             </h2>
 
             <p>
-              Your entry will eventually
-              be written to
+              Creates or updates{" "}
               <code>
                 journal/journal.md
               </code>{" "}
-              with your images.
+              and adds both images to
+              the same GitHub folder.
             </p>
           </div>
 
           <button
             type="button"
-            onClick={saveEntry}
-            disabled={saving}
+            onClick={
+              saveEntry
+            }
+            disabled={
+              saving ||
+              deleting
+            }
           >
             {saving ? (
               <LoaderCircle

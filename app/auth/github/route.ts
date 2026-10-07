@@ -1,25 +1,65 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
-  const clientId = process.env.GITHUB_CLIENT_ID;
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-  if (!clientId) {
+export async function GET() {
+  try {
+    const clientId =
+      process.env.GITHUB_CLIENT_ID;
+
+    if (!clientId) {
+      return NextResponse.json(
+        {
+          error:
+            "GITHUB_CLIENT_ID is not configured.",
+        },
+        { status: 500 }
+      );
+    }
+
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL;
+
+    if (!siteUrl) {
+      return NextResponse.json(
+        {
+          error:
+            "NEXT_PUBLIC_SITE_URL is not configured.",
+        },
+        { status: 500 }
+      );
+    }
+
+    const redirectUri =
+      `${siteUrl.replace(/\/$/, "")}/auth/github/callback`;
+
+    const params = new URLSearchParams({
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      scope: "user:email repo",
+    });
+
+    const githubUrl =
+      `https://github.com/login/oauth/authorize?${params.toString()}`;
+
+    return NextResponse.redirect(
+      githubUrl
+    );
+  } catch (error) {
+    console.error(
+      "GitHub OAuth start error:",
+      error
+    );
+
     return NextResponse.json(
-      { error: "Missing GitHub configuration" },
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to start GitHub OAuth.",
+      },
       { status: 500 }
     );
   }
-
-  const redirectUri =
-    "http://localhost:3000/auth/github/callback";
-
-  const githubUrl = new URL(
-    "https://github.com/login/oauth/authorize"
-  );
-
-  githubUrl.searchParams.set("client_id", clientId);
-  githubUrl.searchParams.set("redirect_uri", redirectUri);
-  githubUrl.searchParams.set("scope", "read:user user:email");
-
-  return NextResponse.redirect(githubUrl.toString());
 }

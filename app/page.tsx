@@ -262,12 +262,8 @@ export default function Home() {
             </section>
 
             <footer className="footer">
-
                 <div className="footer-inner">
-
-                    {/* Left */}
                     <div className="footer-brand">
-
                         <a
                             href="https://hackclub.com/"
                             target="_blank"
@@ -313,13 +309,9 @@ export default function Home() {
                             >
                                 Hackathons
                             </a>
-
                         </div>
-
                     </div>
 
-
-                    {/* Right */}
                     <div className="footer-text">
 
                         <p>

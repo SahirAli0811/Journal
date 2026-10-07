@@ -1,1343 +1,2763 @@
 "use client";
 
-import {
-    useEffect,
-    useState,
-} from "react";
+
 
 import {
-    BarChart3,
+
+    useCallback,
+
+    useEffect,
+
+    useMemo,
+
+    useState,
+
+} from "react";
+
+
+
+import {
+
     BookOpen,
+
     CalendarDays,
+
     ChevronDown,
+
     Clock3,
-    FolderGit2,
+
     GitBranch,
+
+    LayoutDashboard,
+
+    LoaderCircle,
+
     LogOut,
+
     Plus,
+
     Settings,
+
     User,
+
     X,
+
 } from "lucide-react";
+
+
 
 import "./journal.css";
 
-type Book = {
+
+
+type JournalBook = {
+
     id: string;
+
+    user_id: string;
+
     name: string;
+
     ysws: string;
-    github_repo: string;
-    github_url?: string | null;
+
+    github_repo: string | null;
+
+    github_url: string | null;
 
     tracking_mode:
+
     | "hackatime"
+
     | "manual";
 
-    hackatime_project?: string | null;
+    hackatime_project: string | null;
 
     last_hackatime_seconds?: number;
 
     created_at: string;
+
+    updated_at: string;
+
 };
+
+
 
 type HackatimeProject = {
+
     name: string;
+
     total_seconds: number;
+
+    most_recent_heartbeat?: string | null;
+
+    languages?: string[];
+
     archived?: boolean;
+
 };
 
-type GitHubRepository = {
-    id?: number;
+
+
+type GithubRepository = {
+
+    id: number;
+
     name: string;
-    full_name?: string;
-    html_url?: string;
-    private?: boolean;
+
+    full_name: string;
+
+    html_url: string;
+
+    private: boolean;
+
+    description?: string | null;
+
+    default_branch?: string;
+
 };
 
-type TrackingMode =
-    | "hackatime"
-    | "manual";
+
+
+type Profile = {
+
+    name?: string | null;
+
+    email?: string | null;
+
+    username?: string | null;
+
+    avatar_url?: string | null;
+
+};
+
+
+
+async function readJsonResponse(
+
+    response: Response
+
+) {
+
+    const text =
+
+        await response.text();
+
+
+
+    if (!text.trim()) {
+
+        throw new Error(
+
+            `The server returned an empty response (HTTP ${response.status}).`
+
+        );
+
+    }
+
+
+
+    try {
+
+        return JSON.parse(text);
+
+    } catch {
+
+        console.error(
+
+            "Invalid JSON response:",
+
+            text
+
+        );
+
+
+
+        throw new Error(
+
+            `The server returned invalid JSON (HTTP ${response.status}).`
+
+        );
+
+    }
+
+}
+
+
 
 function formatTime(
+
     seconds: number
+
 ) {
+
     if (
+
         !seconds ||
+
         seconds < 1
+
     ) {
+
         return "0m";
+
     }
+
+
 
     const hours =
+
         Math.floor(
+
             seconds / 3600
+
         );
+
+
 
     const minutes =
+
         Math.floor(
+
             (seconds % 3600) /
+
             60
+
         );
+
+
 
     if (hours > 0) {
+
         return `${hours}h ${minutes}m`;
+
     }
+
+
 
     return `${minutes}m`;
+
 }
+
+
 
 function formatDate(
-    value: string
+
+    date: string
+
 ) {
-    return new Intl.DateTimeFormat(
-        "en-IN",
-        {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-        }
-    ).format(
-        new Date(value)
-    );
+
+    try {
+
+        return new Intl.DateTimeFormat(
+
+            "en-IN",
+
+            {
+
+                day: "numeric",
+
+                month: "short",
+
+                year: "numeric",
+
+            }
+
+        ).format(new Date(date));
+
+    } catch {
+
+        return date;
+
+    }
+
 }
 
-function getInitials(
-    name: string
-) {
-    const parts = name
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean);
 
-    if (
-        parts.length === 0
-    ) {
-        return "U";
-    }
-
-    if (
-        parts.length === 1
-    ) {
-        return (
-            parts[0][0]?.toUpperCase() ||
-            "U"
-        );
-    }
-
-    return (
-        `${parts[0][0] || ""}${parts[
-            parts.length - 1
-        ][0] || ""
-            }`.toUpperCase()
-    );
-}
-
-function extractRepositories(
-    value: unknown
-): GitHubRepository[] {
-    if (
-        Array.isArray(value)
-    ) {
-        return value as GitHubRepository[];
-    }
-
-    if (
-        value &&
-        typeof value ===
-        "object"
-    ) {
-        const object =
-            value as Record<
-                string,
-                unknown
-            >;
-
-        if (
-            Array.isArray(
-                object.repositories
-            )
-        ) {
-            return object.repositories as GitHubRepository[];
-        }
-
-        if (
-            Array.isArray(
-                object.repos
-            )
-        ) {
-            return object.repos as GitHubRepository[];
-        }
-
-        if (
-            Array.isArray(
-                object.data
-            )
-        ) {
-            return object.data as GitHubRepository[];
-        }
-    }
-
-    return [];
-}
 
 export default function JournalPage() {
+
     const [books, setBooks] =
-        useState<Book[]>([]);
 
-    const [projects, setProjects] =
-        useState<
-            HackatimeProject[]
-        >([]);
+        useState<JournalBook[]>(
 
-    const [repositories, setRepositories] =
-        useState<
-            GitHubRepository[]
-        >([]);
+            []
+
+        );
+
+
+
+    const [
+
+        hackatimeProjects,
+
+        setHackatimeProjects,
+
+    ] = useState<
+
+        HackatimeProject[]
+
+    >([]);
+
+
+
+    const [
+
+        githubRepositories,
+
+        setGithubRepositories,
+
+    ] = useState<
+
+        GithubRepository[]
+
+    >([]);
+
+
+
+    const [profile, setProfile] =
+
+        useState<Profile | null>(
+
+            null
+
+        );
+
+
 
     const [loading, setLoading] =
+
         useState(true);
 
-    const [modalOpen, setModalOpen] =
-        useState(false);
+
 
     const [creating, setCreating] =
+
         useState(false);
 
-    const [error, setError] =
-        useState("");
 
-    const [profileName, setProfileName] =
-        useState("Builder");
 
-    const [profileUsername, setProfileUsername] =
-        useState("");
+    const [
 
-    const [profileAvatar, setProfileAvatar] =
-        useState("");
+        githubRepositoriesLoading,
 
-    const [trackingMode, setTrackingMode] =
-        useState<TrackingMode>(
-            "hackatime"
-        );
+        setGithubRepositoriesLoading,
 
-    const [name, setName] =
-        useState("");
+    ] = useState(false);
+
+
+
+    const [
+
+        githubRepositoriesError,
+
+        setGithubRepositoriesError,
+
+    ] = useState("");
+
+
+
+    const [
+
+        showCreateModal,
+
+        setShowCreateModal,
+
+    ] = useState(false);
+
+
+
+    const [
+
+        projectName,
+
+        setProjectName,
+
+    ] = useState("");
+
+
 
     const [ysws, setYsws] =
+
         useState("");
 
-    const [hackatimeProject, setHackatimeProject] =
+
+
+    const [
+
+        trackingMode,
+
+        setTrackingMode,
+
+    ] = useState<
+
+        "hackatime" | "manual"
+
+    >("hackatime");
+
+
+
+    const [
+
+        hackatimeProject,
+
+        setHackatimeProject,
+
+    ] = useState("");
+
+
+
+    const [
+
+        githubRepo,
+
+        setGithubRepo,
+
+    ] = useState("");
+
+
+
+    const [formError, setFormError] =
+
         useState("");
 
-    const [githubRepo, setGithubRepo] =
-        useState("");
 
-    /*
-     * ---------------------------------------------------------
-     * THEME
-     * ---------------------------------------------------------
-     */
 
-    useEffect(() => {
-        const saved =
-            window.localStorage.getItem(
-                "journal-theme"
+    const activeHackatimeProjects =
+
+        useMemo(() => {
+
+            return hackatimeProjects.filter(
+
+                (project) =>
+
+                    !project.archived
+
             );
 
-        document.documentElement.dataset.journalTheme =
-            saved === "light"
-                ? "light"
-                : "dark";
-    }, []);
+        }, [
 
-    /*
-     * ---------------------------------------------------------
-     * LOAD PAGE
-     * ---------------------------------------------------------
-     */
+            hackatimeProjects,
 
-    async function loadPage() {
+        ]);
+
+
+
+    const selectedGithubRepository =
+
+        useMemo(() => {
+
+            return githubRepositories.find(
+
+                (repository) =>
+
+                    repository.full_name ===
+
+                    githubRepo
+
+            );
+
+        }, [
+
+            githubRepositories,
+
+            githubRepo,
+
+        ]);
+
+
+
+    const selectedHackatimeProject =
+
+        useMemo(() => {
+
+            return activeHackatimeProjects.find(
+
+                (project) =>
+
+                    project.name ===
+
+                    hackatimeProject
+
+            );
+
+        }, [
+
+            activeHackatimeProjects,
+
+            hackatimeProject,
+
+        ]);
+
+
+
+    async function loadBooks() {
+
         try {
-            setLoading(true);
-            setError("");
 
-            const [
-                booksResponse,
-                projectsResponse,
-                repositoriesResponse,
-                profileResponse,
-            ] =
-                await Promise.all([
-                    fetch(
-                        "/api/journal/books",
-                        {
-                            cache:
-                                "no-store",
-                        }
-                    ),
+            const response =
 
-                    fetch(
-                        "/api/hackatime/projects",
-                        {
-                            cache:
-                                "no-store",
-                        }
-                    ),
+                await fetch(
 
-                    fetch(
-                        "/api/github/repositories",
-                        {
-                            cache:
-                                "no-store",
-                        }
-                    ),
+                    "/api/journal/books",
 
-                    fetch(
-                        "/api/profile",
-                        {
-                            cache:
-                                "no-store",
-                        }
-                    ),
-                ]);
+                    {
 
-            /*
-             * Books
-             */
+                        cache: "no-store",
 
-            if (
-                booksResponse.ok
-            ) {
-                const data =
-                    await booksResponse.json();
+                    }
 
-                setBooks(
-                    Array.isArray(
-                        data?.books
-                    )
-                        ? data.books
-                        : []
                 );
+
+
+
+            const data =
+
+                await readJsonResponse(
+
+                    response
+
+                );
+
+
+
+            if (!response.ok) {
+
+                throw new Error(
+
+                    data?.error ||
+
+                    "Failed to load journal books."
+
+                );
+
             }
 
-            /*
-             * Hackatime
-             */
 
-            if (
-                projectsResponse.ok
-            ) {
-                const data =
-                    await projectsResponse.json();
 
-                const active =
-                    Array.isArray(
-                        data?.projects
-                    )
-                        ? data.projects.filter(
-                            (
-                                item: HackatimeProject
-                            ) =>
-                                !item.archived
-                        )
-                        : [];
+            setBooks(
 
-                setProjects(active);
-            }
+                Array.isArray(
 
-            /*
-             * GitHub
-             */
+                    data?.books
 
-            if (
-                repositoriesResponse.ok
-            ) {
-                const data =
-                    await repositoriesResponse.json();
+                )
 
-                setRepositories(
-                    extractRepositories(
-                        data
-                    )
-                );
-            }
+                    ? data.books
 
-            /*
-             * Profile
-             */
+                    : []
 
-            if (
-                profileResponse.ok
-            ) {
-                const data =
-                    await profileResponse.json();
+            );
 
-                setProfileName(
-                    data?.profile?.name ||
-                    "Builder"
-                );
+        } catch (error) {
 
-                setProfileUsername(
-                    data?.profile?.username ||
-                    ""
-                );
-
-                setProfileAvatar(
-                    data?.profile?.avatar_url ||
-                    ""
-                );
-            }
-
-            /*
-             * Helpful error states.
-             */
-
-            if (
-                !repositoriesResponse.ok
-            ) {
-                console.error(
-                    "GitHub repositories error:",
-                    await repositoriesResponse
-                        .clone()
-                        .text()
-                );
-            }
-
-            if (
-                !projectsResponse.ok
-            ) {
-                console.error(
-                    "Hackatime projects request failed:",
-                    projectsResponse.status
-                );
-            }
-        } catch (err) {
             console.error(
-                "Journal page error:",
-                err
+
+                "Journal books error:",
+
+                error
+
             );
 
-            setError(
-                err instanceof Error
-                    ? err.message
-                    : "Could not load Journal."
-            );
-        } finally {
-            setLoading(false);
+
+
+            setBooks([]);
+
         }
+
     }
 
-    useEffect(() => {
-        loadPage();
-    }, []);
 
-    /*
-     * ---------------------------------------------------------
-     * CREATE FORM
-     * ---------------------------------------------------------
-     */
 
-    function resetForm() {
-        setTrackingMode(
-            "hackatime"
+    async function loadHackatimeProjects() {
+
+        try {
+
+            const response =
+
+                await fetch(
+
+                    "/api/hackatime/projects",
+
+                    {
+
+                        cache: "no-store",
+
+                    }
+
+                );
+
+
+
+            const data =
+
+                await readJsonResponse(
+
+                    response
+
+                );
+
+
+
+            if (!response.ok) {
+
+                throw new Error(
+
+                    data?.error ||
+
+                    "Failed to load Hackatime projects."
+
+                );
+
+            }
+
+
+
+            setHackatimeProjects(
+
+                Array.isArray(
+
+                    data?.projects
+
+                )
+
+                    ? data.projects
+
+                    : []
+
+            );
+
+        } catch (error) {
+
+            console.error(
+
+                "Hackatime projects error:",
+
+                error
+
+            );
+
+
+
+            setHackatimeProjects([]);
+
+        }
+
+    }
+
+
+
+    async function loadProfile() {
+
+        try {
+
+            const response =
+
+                await fetch(
+
+                    "/api/profile",
+
+                    {
+
+                        cache: "no-store",
+
+                    }
+
+                );
+
+
+
+            if (!response.ok) {
+
+                return;
+
+            }
+
+
+
+            const data =
+
+                await readJsonResponse(
+
+                    response
+
+                );
+
+
+
+            setProfile(
+
+                data?.profile ??
+
+                data?.user ??
+
+                null
+
+            );
+
+        } catch (error) {
+
+            console.error(
+
+                "Profile loading error:",
+
+                error
+
+            );
+
+        }
+
+    }
+
+
+
+    const loadGithubRepositories =
+
+        useCallback(
+
+            async () => {
+
+                setGithubRepositoriesLoading(
+
+                    true
+
+                );
+
+
+
+                setGithubRepositoriesError(
+
+                    ""
+
+                );
+
+
+
+                try {
+
+                    const response =
+
+                        await fetch(
+
+                            "/api/github/repositories",
+
+                            {
+
+                                method: "GET",
+
+                                cache: "no-store",
+
+                            }
+
+                        );
+
+
+
+                    const data =
+
+                        await readJsonResponse(
+
+                            response
+
+                        );
+
+
+
+                    console.log(
+
+                        "GitHub repositories response:",
+
+                        data
+
+                    );
+
+
+
+                    if (!response.ok) {
+
+                        throw new Error(
+
+                            data?.error ||
+
+                            `Failed to load GitHub repositories (HTTP ${response.status}).`
+
+                        );
+
+                    }
+
+
+
+                    const repositories =
+
+                        Array.isArray(
+
+                            data?.repositories
+
+                        )
+
+                            ? data.repositories
+
+                            : Array.isArray(
+
+                                data?.repos
+
+                            )
+
+                                ? data.repos
+
+                                : [];
+
+
+
+                    setGithubRepositories(
+
+                        repositories
+
+                    );
+
+
+
+                    if (
+
+                        repositories.length ===
+
+                        0
+
+                    ) {
+
+                        setGithubRepositoriesError(
+
+                            "No GitHub repositories were found."
+
+                        );
+
+                    }
+
+                } catch (error) {
+
+                    console.error(
+
+                        "GitHub repositories error:",
+
+                        error
+
+                    );
+
+
+
+                    setGithubRepositories(
+
+                        []
+
+                    );
+
+
+
+                    setGithubRepositoriesError(
+
+                        error instanceof Error
+
+                            ? error.message
+
+                            : "Failed to load GitHub repositories."
+
+                    );
+
+                } finally {
+
+                    setGithubRepositoriesLoading(
+
+                        false
+
+                    );
+
+                }
+
+            },
+
+            []
+
         );
 
-        setName("");
+
+
+    async function loadPage() {
+
+        setLoading(true);
+
+
+
+        await Promise.allSettled([
+
+            loadBooks(),
+
+            loadHackatimeProjects(),
+
+            loadProfile(),
+
+        ]);
+
+
+
+        setLoading(false);
+
+    }
+
+
+
+    useEffect(() => {
+
+        void loadPage();
+
+    }, []);
+
+
+
+    useEffect(() => {
+
+        const savedTheme =
+
+            window.localStorage.getItem(
+
+                "journal-theme"
+
+            );
+
+
+
+        const theme =
+
+            savedTheme === "light"
+
+                ? "light"
+
+                : "dark";
+
+
+
+        document.documentElement.dataset.journalTheme =
+
+            theme;
+
+    }, []);
+
+
+
+    useEffect(() => {
+
+        if (!showCreateModal) {
+
+            return;
+
+        }
+
+
+
+        setGithubRepositoriesError(
+
+            ""
+
+        );
+
+
+
+        void loadGithubRepositories();
+
+    }, [
+
+        showCreateModal,
+
+        loadGithubRepositories,
+
+    ]);
+
+
+
+    useEffect(() => {
+
+        if (
+
+            trackingMode ===
+
+            "hackatime" &&
+
+            !hackatimeProject &&
+
+            activeHackatimeProjects.length >
+
+            0
+
+        ) {
+
+            setHackatimeProject(
+
+                activeHackatimeProjects[0].name
+
+            );
+
+        }
+
+
+
+        if (
+
+            trackingMode ===
+
+            "manual"
+
+        ) {
+
+            setHackatimeProject(
+
+                ""
+
+            );
+
+        }
+
+    }, [
+
+        trackingMode,
+
+        activeHackatimeProjects,
+
+        hackatimeProject,
+
+    ]);
+
+
+
+    function resetCreateForm() {
+
+        setProjectName("");
 
         setYsws("");
 
+
+
+        setTrackingMode(
+
+            "hackatime"
+
+        );
+
+
+
         setHackatimeProject(
-            projects[0]?.name || ""
+
+            activeHackatimeProjects[0]
+
+                ?.name || ""
+
         );
 
-        setGithubRepo(
-            repositories[0]
-                ?.full_name ||
-            repositories[0]
-                ?.name ||
+
+
+        setGithubRepo("");
+
+
+
+        setFormError("");
+
+
+
+        setGithubRepositoriesError(
+
             ""
+
         );
+
     }
 
-    function openCreate() {
-        setError("");
 
-        resetForm();
 
-        setModalOpen(true);
+    function openCreateModal() {
+
+        resetCreateForm();
+
+        setShowCreateModal(
+
+            true
+
+        );
+
     }
 
-    function closeCreate() {
+
+
+    function closeCreateModal() {
+
         if (creating) {
+
             return;
+
         }
 
-        setModalOpen(false);
+
+
+        setShowCreateModal(
+
+            false
+
+        );
+
+
+
+        setFormError("");
+
     }
 
+
+
     async function createBook() {
+
+        setFormError("");
+
+
+
+        const cleanProjectName =
+
+            projectName.trim();
+
+
+
+        const cleanYsws =
+
+            ysws.trim();
+
+
+
+        if (!cleanProjectName) {
+
+            setFormError(
+
+                "Enter a project name."
+
+            );
+
+
+
+            return;
+
+        }
+
+
+
+        if (!cleanYsws) {
+
+            setFormError(
+
+                "Enter the YSWS / shipping program."
+
+            );
+
+
+
+            return;
+
+        }
+
+
+
+        if (!githubRepo) {
+
+            setFormError(
+
+                "Select a GitHub repository."
+
+            );
+
+
+
+            return;
+
+        }
+
+
+
+        if (
+
+            trackingMode ===
+
+            "hackatime" &&
+
+            !hackatimeProject
+
+        ) {
+
+            setFormError(
+
+                "Select a Hackatime project."
+
+            );
+
+
+
+            return;
+
+        }
+
+
+
+        setCreating(true);
+
+
+
         try {
-            setError("");
-
-            const trimmedName =
-                name.trim();
-
-            const trimmedYsws =
-                ysws.trim();
-
-            if (!trimmedName) {
-                setError(
-                    "Enter a project name."
-                );
-                return;
-            }
-
-            if (!trimmedYsws) {
-                setError(
-                    "Enter the YSWS / Shipping On."
-                );
-                return;
-            }
-
-            if (!githubRepo) {
-                setError(
-                    "Select a GitHub repository."
-                );
-                return;
-            }
-
-            if (
-                trackingMode === "hackatime" &&
-                !hackatimeProject
-            ) {
-                setError(
-                    "Select a Hackatime project."
-                );
-                return;
-            }
-
-            setCreating(true);
 
             const repository =
-                repositories.find(
-                    (item) =>
-                        (item.full_name ||
-                            item.name) ===
+
+                githubRepositories.find(
+
+                    (repo) =>
+
+                        repo.full_name ===
+
                         githubRepo
+
                 );
 
+
+
             const response =
+
                 await fetch(
+
                     "/api/journal/books",
+
                     {
+
                         method: "POST",
 
                         headers: {
+
                             "Content-Type":
+
                                 "application/json",
+
                         },
 
                         body: JSON.stringify({
-                            name: trimmedName,
 
-                            ysws: trimmedYsws,
+                            name:
 
-                            githubRepo,
+                                cleanProjectName,
 
-                            githubUrl:
-                                repository?.html_url ||
-                                null,
+                            ysws:
+
+                                cleanYsws,
 
                             trackingMode,
 
                             hackatimeProject:
+
                                 trackingMode ===
+
                                     "hackatime"
+
                                     ? hackatimeProject
+
                                     : null,
+
+                            githubRepo,
+
+                            githubUrl:
+
+                                repository?.html_url ||
+
+                                selectedGithubRepository?.html_url ||
+
+                                null,
+
                         }),
+
                     }
+
                 );
 
-            /*
-             * Do NOT immediately call response.json().
-             *
-             * First inspect what Next.js actually returned.
-             */
 
-            const contentType =
-                response.headers.get(
-                    "content-type"
-                ) || "";
 
-            const responseText =
-                await response.text();
+            const data =
 
-            if (
-                !contentType.includes(
-                    "application/json"
-                )
-            ) {
-                console.error(
-                    "Non-JSON response from /api/journal/books:",
-                    response.status,
-                    responseText
+                await readJsonResponse(
+
+                    response
+
                 );
 
-                throw new Error(
-                    `Journal API returned ${response.status}. Check your terminal for the real server error.`
-                );
-            }
 
-            let data: {
-                success?: boolean;
-                book?: Book;
-                error?: string;
-            };
-
-            try {
-                data =
-                    JSON.parse(responseText);
-            } catch {
-                console.error(
-                    "Invalid JSON from Journal API:",
-                    responseText
-                );
-
-                throw new Error(
-                    "Journal API returned invalid JSON."
-                );
-            }
 
             if (!response.ok) {
+
                 throw new Error(
-                    data.error ||
-                    "Could not create journal book."
+
+                    data?.error ||
+
+                    "Failed to create journal book."
+
                 );
+
             }
 
-            if (!data.book) {
-                throw new Error(
-                    "The server created no journal book."
-                );
+
+
+            const createdBook =
+
+                data?.book;
+
+
+
+            setShowCreateModal(
+
+                false
+
+            );
+
+
+
+            resetCreateForm();
+
+
+
+            if (createdBook?.id) {
+
+                window.location.href =
+
+                    `/journal/${createdBook.id}`;
+
+
+
+                return;
+
             }
 
-            setBooks(
-                (current) => [
-                    data.book as Book,
-                    ...current,
-                ]
-            );
 
-            setModalOpen(false);
 
-            setName("");
-            setYsws("");
-            setHackatimeProject("");
-            setGithubRepo("");
-            setTrackingMode(
-                "hackatime"
-            );
-        } catch (err) {
+            await loadBooks();
+
+        } catch (error) {
+
             console.error(
-                "Create book error:",
-                err
+
+                "Create journal book error:",
+
+                error
+
             );
 
-            setError(
-                err instanceof Error
-                    ? err.message
-                    : "Could not create journal book."
+
+
+            setFormError(
+
+                error instanceof Error
+
+                    ? error.message
+
+                    : "Failed to create journal book."
+
             );
+
         } finally {
+
             setCreating(false);
+
         }
+
     }
 
-    const initials =
-        getInitials(
-            profileName
-        );
+
+
+    async function logout() {
+
+        try {
+
+            await fetch(
+
+                "/api/auth/logout",
+
+                {
+
+                    method: "POST",
+
+                }
+
+            );
+
+        } finally {
+
+            window.location.href =
+
+                "/";
+
+        }
+
+    }
+
+
+
+    function getBookTrackingLabel(
+
+        book: JournalBook
+
+    ) {
+
+        return book.tracking_mode ===
+
+            "hackatime"
+
+            ? "Hackatime"
+
+            : "Manual";
+
+    }
+
+
+
+    function getBookTime(
+
+        book: JournalBook
+
+    ) {
+
+        if (
+
+            book.tracking_mode ===
+
+            "hackatime" &&
+
+            typeof book.last_hackatime_seconds ===
+
+            "number"
+
+        ) {
+
+            return formatTime(
+
+                book.last_hackatime_seconds
+
+            );
+
+        }
+
+
+
+        return "Manual sessions";
+
+    }
+
+
 
     return (
-        <main className="jv-page">
-            {/* =====================================================
-          SIDEBAR
-          ===================================================== */}
+
+        <div className="jv-page">
 
             <aside className="jv-sidebar">
+
                 <div className="jv-brand">
+
                     <div className="jv-brand-icon">
-                        <BookOpen
-                            size={17}
-                        />
+
+                        <BookOpen size={18} />
+
                     </div>
 
-                    <span>
-                        Journal
-                    </span>
+
+
+                    <div>
+
+                        <strong>
+
+                            Journal
+
+                        </strong>
+
+
+
+                        <span>
+
+                            Your building journey
+
+                        </span>
+
+                    </div>
+
                 </div>
+
+
 
                 <nav className="jv-nav">
+
                     <a
+
                         href="/dashboard"
+
                         className="jv-nav-item"
+
                     >
-                        <BarChart3
+
+                        <LayoutDashboard
+
                             size={16}
+
                         />
 
+
+
                         <span>
+
                             Dashboard
+
                         </span>
+
                     </a>
 
+
+
                     <a
+
                         href="/journal"
+
                         className="jv-nav-item jv-nav-active"
+
                     >
-                        <BookOpen
-                            size={16}
-                        />
+
+                        <BookOpen size={16} />
+
+
 
                         <span>
+
                             Journal
+
                         </span>
+
                     </a>
+
+
 
                     <a
+
                         href="/profile"
+
                         className="jv-nav-item"
+
                     >
-                        <Settings
-                            size={16}
-                        />
+
+                        <Settings size={16} />
+
+
 
                         <span>
+
                             Settings
+
                         </span>
+
                     </a>
+
                 </nav>
 
+
+
                 <div className="jv-sidebar-bottom">
-                    <a
-                        href="/profile"
-                        className="jv-profile"
-                    >
-                        {profileAvatar ? (
+
+                    <div className="jv-sidebar-profile">
+
+                        {profile?.avatar_url ? (
+
                             <img
+
                                 src={
-                                    profileAvatar
+
+                                    profile.avatar_url
+
                                 }
-                                alt={
-                                    profileName
-                                }
-                                className="jv-profile-avatar"
+
+                                alt=""
+
                             />
+
                         ) : (
-                            <div className="jv-profile-placeholder">
-                                {initials}
+
+                            <div className="jv-avatar-placeholder">
+
+                                <User size={15} />
+
                             </div>
+
                         )}
 
-                        <div className="jv-profile-info">
+
+
+                        <div className="jv-sidebar-profile-info">
+
                             <strong>
-                                {profileName}
+
+                                {profile?.name ||
+
+                                    profile?.username ||
+
+                                    "Builder"}
+
                             </strong>
 
+
+
                             <span>
-                                {profileUsername
-                                    ? `@${profileUsername}`
-                                    : "View profile"}
+
+                                {profile?.email ||
+
+                                    "Journal account"}
+
                             </span>
+
                         </div>
-                    </a>
 
-                    <a
-                        href="/api/auth/logout"
-                        className="jv-logout"
-                    >
-                        <LogOut
-                            size={15}
-                        />
-
-                        <span>
-                            Logout
-                        </span>
-                    </a>
-                </div>
-            </aside>
-
-            {/* =====================================================
-          MAIN
-          ===================================================== */}
-
-            <section className="jv-main">
-                <header className="jv-header">
-                    <div>
-                        <p className="jv-eyebrow">
-                            YOUR BUILDING JOURNEY
-                        </p>
-
-                        <h1>
-                            Your{" "}
-                            <span>
-                                Journal
-                            </span>
-                        </h1>
-
-                        <p className="jv-description">
-                            Turn every project into
-                            a book of what you
-                            built, learned and
-                            remembered.
-                        </p>
                     </div>
+
+
 
                     <button
+
                         type="button"
-                        className="jv-new-book"
-                        onClick={
-                            openCreate
-                        }
+
+                        className="jv-logout"
+
+                        onClick={logout}
+
                     >
-                        <Plus size={18} />
 
-                        New Journal
-                    </button>
-                </header>
+                        <LogOut size={15} />
 
-                {error &&
-                    !modalOpen ? (
-                    <div className="jv-error">
+
+
                         <span>
-                            {error}
+
+                            Log out
+
                         </span>
 
-                        <button
-                            type="button"
-                            onClick={() =>
-                                setError("")
-                            }
-                        >
-                            <X size={14} />
-                        </button>
+                    </button>
+
+                </div>
+
+            </aside>
+
+
+
+            <main className="jv-main">
+
+                <header className="jv-header">
+
+                    <div>
+
+                        <p className="jv-eyebrow">
+
+                            YOUR JOURNEY
+
+                        </p>
+
+
+
+                        <h1>
+
+                            Journal
+
+                        </h1>
+
+
+
+                        <p className="jv-subtitle">
+
+                            Keep track of the projects
+
+                            you build and the time you
+
+                            spend building them.
+
+                        </p>
+
                     </div>
-                ) : null}
+
+
+
+                    <button
+
+                        type="button"
+
+                        className="jv-new-button"
+
+                        onClick={
+
+                            openCreateModal
+
+                        }
+
+                    >
+
+                        <Plus size={17} />
+
+
+
+                        <span>
+
+                            New Journal
+
+                        </span>
+
+                    </button>
+
+                </header>
+
+
 
                 {loading ? (
+
                     <div className="jv-loading">
-                        Loading your
-                        journals...
+
+                        <LoaderCircle
+
+                            size={20}
+
+                            className="jv-spin"
+
+                        />
+
+
+
+                        <span>
+
+                            Loading your journals...
+
+                        </span>
+
                     </div>
-                ) : books.length ===
-                    0 ? (
-                    <section className="jv-empty-state">
-                        <div className="jv-empty-book">
+
+                ) : books.length === 0 ? (
+
+                    <section className="jv-empty">
+
+                        <div className="jv-empty-icon">
+
                             <BookOpen
-                                size={40}
+
+                                size={28}
+
                             />
+
                         </div>
 
-                        <p className="jv-section-label">
-                            YOUR BOOKS
+
+
+                        <p className="jv-empty-label">
+
+                            NO JOURNALS YET
+
                         </p>
+
+
 
                         <h2>
+
                             Start your first
-                            project journal.
+
+                            project book.
+
                         </h2>
 
+
+
                         <p>
-                            Connect your GitHub
-                            repository and
-                            choose Hackatime
-                            or manual session
-                            tracking.
+
+                            Create a journal book for a
+
+                            project, connect Hackatime and
+
+                            GitHub, and start documenting
+
+                            your build.
+
                         </p>
 
+
+
                         <button
+
                             type="button"
+
                             className="jv-empty-button"
+
                             onClick={
-                                openCreate
+
+                                openCreateModal
+
                             }
+
                         >
+
                             <Plus size={16} />
 
-                            Create your first
-                            book
-                        </button>
-                    </section>
-                ) : (
-                    <section>
-                        <div className="jv-section-heading">
-                            <div>
-                                <p className="jv-section-label">
-                                    YOUR BOOKS
-                                </p>
 
-                                <h2>
-                                    Projects you're
-                                    documenting
-                                </h2>
-                            </div>
 
                             <span>
-                                {books.length}{" "}
-                                {books.length ===
-                                    1
-                                    ? "book"
-                                    : "books"}
+
+                                Create project book
+
                             </span>
-                        </div>
 
-                        <div className="jv-book-grid">
-                            {books.map(
-                                (book) => (
-                                    <a
-                                        key={
-                                            book.id
-                                        }
-                                        href={`/journal/${book.id}`}
-                                        className="jv-book-card"
-                                    >
-                                        <div className="jv-book-cover">
-                                            <div className="jv-book-spine" />
+                        </button>
 
-                                            <BookOpen
-                                                size={26}
-                                            />
-
-                                            <span>
-                                                JOURNAL
-                                            </span>
-
-                                            <strong>
-                                                {
-                                                    book.name
-                                                }
-                                            </strong>
-                                        </div>
-
-                                        <div className="jv-book-body">
-                                            <div className="jv-book-title-row">
-                                                <div>
-                                                    <h3>
-                                                        {
-                                                            book.name
-                                                        }
-                                                    </h3>
-
-                                                    <p>
-                                                        {
-                                                            book.ysws
-                                                        }
-                                                    </p>
-                                                </div>
-
-                                                <FolderGit2
-                                                    size={17}
-                                                />
-                                            </div>
-
-                                            <div className="jv-book-meta">
-                                                <span>
-                                                    <Clock3
-                                                        size={13}
-                                                    />
-
-                                                    {book.tracking_mode ===
-                                                        "manual"
-                                                        ? "Manual time"
-                                                        : "Hackatime"}
-                                                </span>
-
-                                                <span>
-                                                    <CalendarDays
-                                                        size={13}
-                                                    />
-
-                                                    {formatDate(
-                                                        book.created_at
-                                                    )}
-                                                </span>
-                                            </div>
-
-                                            <div className="jv-book-links">
-                                                <span>
-                                                    {book.tracking_mode ===
-                                                        "manual"
-                                                        ? "Manual sessions"
-                                                        : `Hackatime: ${book.hackatime_project}`}
-                                                </span>
-
-                                                <span>
-                                                    <GitBranch
-                                                        size={12}
-                                                    />
-
-                                                    {
-                                                        book.github_repo
-                                                    }
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </a>
-                                )
-                            )}
-                        </div>
                     </section>
-                )}
-            </section>
 
-            {/* =====================================================
-          CREATE MODAL
-          ===================================================== */}
+                ) : (
 
-            {modalOpen ? (
-                <div
-                    className="jv-modal-backdrop"
-                    onMouseDown={(
-                        event
-                    ) => {
-                        if (
-                            event.target ===
-                            event.currentTarget
-                        ) {
-                            closeCreate();
-                        }
-                    }}
-                >
-                    <section className="jv-modal">
-                        <div className="jv-modal-header">
+                    <section className="jv-books">
+
+                        <div className="jv-books-header">
+
                             <div>
-                                <p className="jv-section-label">
-                                    NEW JOURNAL
-                                </p>
-
-                                <h2>
-                                    Create a project
-                                    book
-                                </h2>
 
                                 <p>
-                                    Choose how Journal
-                                    should track your
-                                    time.
+
+                                    YOUR PROJECTS
+
                                 </p>
+
+
+
+                                <h2>
+
+                                    Project books
+
+                                </h2>
+
                             </div>
 
-                            <button
-                                type="button"
-                                className="jv-close"
-                                onClick={
-                                    closeCreate
-                                }
-                                disabled={
-                                    creating
-                                }
-                            >
-                                <X size={17} />
-                            </button>
+
+
+                            <span>
+
+                                {books.length}{" "}
+
+                                {books.length ===
+
+                                    1
+
+                                    ? "book"
+
+                                    : "books"}
+
+                            </span>
+
                         </div>
 
-                        {error ? (
-                            <div className="jv-modal-error">
-                                {error}
-                            </div>
-                        ) : null}
 
-                        <div className="jv-form">
-                            <label className="jv-field">
-                                <span>
-                                    Project name
-                                </span>
 
-                                <input
-                                    type="text"
-                                    value={
-                                        name
-                                    }
-                                    onChange={(
-                                        event
-                                    ) =>
-                                        setName(
-                                            event.target
-                                                .value
-                                        )
-                                    }
-                                    placeholder="F1 BLARE"
-                                    autoFocus
-                                />
-                            </label>
+                        <div className="jv-book-grid">
 
-                            <label className="jv-field">
-                                <span>
-                                    YSWS / Shipping
-                                    On
-                                </span>
+                            {books.map(
 
-                                <input
-                                    type="text"
-                                    value={
-                                        ysws
-                                    }
-                                    onChange={(
-                                        event
-                                    ) =>
-                                        setYsws(
-                                            event.target
-                                                .value
-                                        )
-                                    }
-                                    placeholder="Stardance"
-                                />
-                            </label>
+                                (book) => (
 
-                            <div className="jv-field">
-                                <span>
-                                    Time tracking
-                                </span>
+                                    <a
 
-                                <div className="jv-tracking-options">
-                                    <button
-                                        type="button"
-                                        className={`jv-tracking-option ${trackingMode ===
-                                            "hackatime"
-                                            ? "jv-tracking-active"
-                                            : ""
-                                            }`}
-                                        onClick={() =>
-                                            setTrackingMode(
-                                                "hackatime"
-                                            )
-                                        }
+                                        href={`/journal/${book.id}`}
+
+                                        key={book.id}
+
+                                        className="jv-book-card"
+
                                     >
-                                        <Clock3
-                                            size={17}
-                                        />
 
-                                        <div>
-                                            <strong>
-                                                Hackatime
-                                            </strong>
+                                        <div className="jv-book-card-top">
 
-                                            <small>
-                                                Automatically track
-                                                coding time
-                                            </small>
+                                            <div className="jv-book-icon">
+
+                                                <BookOpen
+
+                                                    size={20}
+
+                                                />
+
+                                            </div>
+
+
+
+                                            <span className="jv-book-arrow">
+
+                                                →
+
+                                            </span>
+
                                         </div>
-                                    </button>
 
-                                    <button
-                                        type="button"
-                                        className={`jv-tracking-option ${trackingMode ===
-                                            "manual"
-                                            ? "jv-tracking-active"
-                                            : ""
-                                            }`}
-                                        onClick={() =>
-                                            setTrackingMode(
-                                                "manual"
-                                            )
-                                        }
-                                    >
-                                        <CalendarDays
-                                            size={17}
-                                        />
 
-                                        <div>
-                                            <strong>
-                                                No Hackatime
-                                            </strong>
 
-                                            <small>
-                                                Add your own
-                                                sessions
-                                            </small>
+                                        <div className="jv-book-content">
+
+                                            <p className="jv-book-project-label">
+
+                                                PROJECT
+
+                                            </p>
+
+
+
+                                            <h3>
+
+                                                {book.name}
+
+                                            </h3>
+
+
+
+                                            <p className="jv-book-ysws">
+
+                                                {book.ysws}
+
+                                            </p>
+
                                         </div>
-                                    </button>
-                                </div>
-                            </div>
 
-                            {trackingMode ===
-                                "hackatime" ? (
-                                <label className="jv-field">
-                                    <span>
-                                        Hackatime
-                                        project
-                                    </span>
 
-                                    <div className="jv-select-wrap">
-                                        <select
-                                            value={
-                                                hackatimeProject
-                                            }
-                                            onChange={(
-                                                event
-                                            ) =>
-                                                setHackatimeProject(
-                                                    event.target
-                                                        .value
-                                                )
-                                            }
-                                        >
-                                            <option value="">
-                                                Select project
-                                            </option>
 
-                                            {projects.map(
-                                                (
-                                                    project
-                                                ) => (
-                                                    <option
-                                                        key={
-                                                            project.name
-                                                        }
-                                                        value={
-                                                            project.name
-                                                        }
-                                                    >
-                                                        {
-                                                            project.name
-                                                        }{" "}
-                                                        ·{" "}
-                                                        {formatTime(
-                                                            Number(
-                                                                project.total_seconds ||
-                                                                0
-                                                            )
-                                                        )}
-                                                    </option>
-                                                )
-                                            )}
-                                        </select>
+                                        <div className="jv-book-meta">
 
-                                        <ChevronDown
-                                            size={15}
-                                        />
-                                    </div>
-                                </label>
-                            ) : (
-                                <div className="jv-manual-info">
-                                    <CalendarDays
-                                        size={17}
-                                    />
+                                            <span>
 
-                                    <div>
-                                        <strong>
-                                            Manual sessions
-                                        </strong>
+                                                <Clock3
 
-                                        <span>
-                                            You will enter
-                                            date,
-                                            duration and
-                                            notes when
-                                            writing a journal
-                                            entry.
-                                        </span>
-                                    </div>
-                                </div>
+                                                    size={13}
+
+                                                />
+
+
+
+                                                {getBookTrackingLabel(
+
+                                                    book
+
+                                                )}
+
+                                            </span>
+
+
+
+                                            <span>
+
+                                                {getBookTime(
+
+                                                    book
+
+                                                )}
+
+                                            </span>
+
+                                        </div>
+
+
+
+                                        <div className="jv-book-footer">
+
+                                            <span>
+
+                                                <GitBranch
+
+                                                    size={13}
+
+                                                />
+
+
+
+                                                {book.github_repo ||
+
+                                                    "No repository"}
+
+                                            </span>
+
+
+
+                                            <span>
+
+                                                <CalendarDays
+
+                                                    size={13}
+
+                                                />
+
+
+
+                                                {formatDate(
+
+                                                    book.created_at
+
+                                                )}
+
+                                            </span>
+
+                                        </div>
+
+                                    </a>
+
+                                )
+
                             )}
 
-                            <label className="jv-field">
-                                <span>
-                                    GitHub
-                                    repository
-                                </span>
-
-                                <div className="jv-select-wrap">
-                                    <select
-                                        value={
-                                            githubRepo
-                                        }
-                                        onChange={(
-                                            event
-                                        ) =>
-                                            setGithubRepo(
-                                                event.target
-                                                    .value
-                                            )
-                                        }
-                                    >
-                                        <option value="">
-                                            Select repository
-                                        </option>
-
-                                        {repositories.map(
-                                            (
-                                                repo
-                                            ) => {
-                                                const value =
-                                                    repo.full_name ||
-                                                    repo.name;
-
-                                                return (
-                                                    <option
-                                                        key={
-                                                            repo.id ??
-                                                            value
-                                                        }
-                                                        value={
-                                                            value
-                                                        }
-                                                    >
-                                                        {value}
-
-                                                        {repo.private
-                                                            ? " · Private"
-                                                            : ""}
-                                                    </option>
-                                                );
-                                            }
-                                        )}
-                                    </select>
-
-                                    <ChevronDown
-                                        size={15}
-                                    />
-                                </div>
-                            </label>
                         </div>
 
-                        <div className="jv-modal-actions">
-                            <button
-                                type="button"
-                                className="jv-cancel-button"
-                                onClick={
-                                    closeCreate
-                                }
-                                disabled={
-                                    creating
-                                }
-                            >
-                                Cancel
-                            </button>
+                    </section>
+
+                )}
+
+            </main>
+
+
+
+            {showCreateModal && (
+
+                <div
+
+                    className="jv-modal-backdrop"
+
+                    onMouseDown={
+
+                        closeCreateModal
+
+                    }
+
+                >
+
+                    <div
+
+                        className="jv-modal"
+
+                        onMouseDown={(event) =>
+
+                            event.stopPropagation()
+
+                        }
+
+                    >
+
+                        <div className="jv-modal-header">
+
+                            <div>
+
+                                <p className="jv-modal-eyebrow">
+
+                                    NEW JOURNAL
+
+                                </p>
+
+
+
+                                <h2>
+
+                                    Create a project book
+
+                                </h2>
+
+
+
+                                <p>
+
+                                    Choose how Journal should
+
+                                    track your time.
+
+                                </p>
+
+                            </div>
+
+
 
                             <button
+
                                 type="button"
-                                className="jv-create-button"
+
+                                className="jv-modal-close"
+
                                 onClick={
-                                    createBook
+
+                                    closeCreateModal
+
                                 }
-                                disabled={
-                                    creating
-                                }
+
+                                disabled={creating}
+
+                                aria-label="Close"
+
                             >
-                                <BookOpen
-                                    size={16}
+
+                                <X size={18} />
+
+                            </button>
+
+                        </div>
+
+
+
+                        <div className="jv-modal-body">
+
+                            <div className="jv-field">
+
+                                <label>
+
+                                    PROJECT NAME
+
+                                </label>
+
+
+
+                                <input
+
+                                    type="text"
+
+                                    value={
+
+                                        projectName
+
+                                    }
+
+                                    onChange={(event) =>
+
+                                        setProjectName(
+
+                                            event.target.value
+
+                                        )
+
+                                    }
+
+                                    placeholder="e.g. F1 BLARE"
+
+                                    disabled={creating}
+
                                 />
 
-                                {creating
-                                    ? "Creating..."
-                                    : "Create Book"}
-                            </button>
+                            </div>
+
+
+
+                            <div className="jv-field">
+
+                                <label>
+
+                                    YSWS / SHIPPING ON
+
+                                </label>
+
+
+
+                                <input
+
+                                    type="text"
+
+                                    value={ysws}
+
+                                    onChange={(event) =>
+
+                                        setYsws(
+
+                                            event.target.value
+
+                                        )
+
+                                    }
+
+                                    placeholder="e.g. Stardance"
+
+                                    disabled={creating}
+
+                                />
+
+                            </div>
+
+
+
+                            <div className="jv-field">
+
+                                <label>
+
+                                    TIME TRACKING
+
+                                </label>
+
+
+
+                                <div className="jv-tracking-options">
+
+                                    <button
+
+                                        type="button"
+
+                                        className={`jv-tracking-option ${trackingMode ===
+
+                                                "hackatime"
+
+                                                ? "jv-tracking-active"
+
+                                                : ""
+
+                                            }`}
+
+                                        onClick={() =>
+
+                                            setTrackingMode(
+
+                                                "hackatime"
+
+                                            )
+
+                                        }
+
+                                        disabled={creating}
+
+                                    >
+
+                                        <Clock3
+
+                                            size={18}
+
+                                        />
+
+
+
+                                        <span>
+
+                                            <strong>
+
+                                                Hackatime
+
+                                            </strong>
+
+
+
+                                            <small>
+
+                                                Automatically track
+
+                                                coding time
+
+                                            </small>
+
+                                        </span>
+
+                                    </button>
+
+
+
+                                    <button
+
+                                        type="button"
+
+                                        className={`jv-tracking-option ${trackingMode ===
+
+                                                "manual"
+
+                                                ? "jv-tracking-active"
+
+                                                : ""
+
+                                            }`}
+
+                                        onClick={() =>
+
+                                            setTrackingMode(
+
+                                                "manual"
+
+                                            )
+
+                                        }
+
+                                        disabled={creating}
+
+                                    >
+
+                                        <CalendarDays
+
+                                            size={18}
+
+                                        />
+
+
+
+                                        <span>
+
+                                            <strong>
+
+                                                No Hackatime
+
+                                            </strong>
+
+
+
+                                            <small>
+
+                                                Add your own
+
+                                                sessions
+
+                                            </small>
+
+                                        </span>
+
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+
+
+                            {trackingMode ===
+
+                                "hackatime" && (
+
+                                    <div className="jv-field">
+
+                                        <label>
+
+                                            HACKATIME PROJECT
+
+                                        </label>
+
+
+
+                                        <div className="jv-select-wrapper">
+
+                                            <select
+
+                                                value={
+
+                                                    hackatimeProject
+
+                                                }
+
+                                                onChange={(event) =>
+
+                                                    setHackatimeProject(
+
+                                                        event.target.value
+
+                                                    )
+
+                                                }
+
+                                                disabled={
+
+                                                    creating
+
+                                                }
+
+                                            >
+
+                                                <option value="">
+
+                                                    Select project
+
+                                                </option>
+
+
+
+                                                {activeHackatimeProjects.map(
+
+                                                    (
+
+                                                        project
+
+                                                    ) => (
+
+                                                        <option
+
+                                                            key={
+
+                                                                project.name
+
+                                                            }
+
+                                                            value={
+
+                                                                project.name
+
+                                                            }
+
+                                                        >
+
+                                                            {
+
+                                                                project.name
+
+                                                            }{" "}
+
+                                                            ·{" "}
+
+                                                            {formatTime(
+
+                                                                project.total_seconds
+
+                                                            )}
+
+                                                        </option>
+
+                                                    )
+
+                                                )}
+
+                                            </select>
+
+
+
+                                            <ChevronDown
+
+                                                size={15}
+
+                                            />
+
+                                        </div>
+
+
+
+                                        {selectedHackatimeProject && (
+
+                                            <p className="jv-field-help">
+
+                                                Currently tracked:
+
+                                                {" "}
+
+                                                {formatTime(
+
+                                                    selectedHackatimeProject.total_seconds
+
+                                                )}
+
+                                            </p>
+
+                                        )}
+
+                                    </div>
+
+                                )}
+
+
+
+                            {trackingMode ===
+
+                                "manual" && (
+
+                                    <div className="jv-manual-info">
+
+                                        <Clock3
+
+                                            size={17}
+
+                                        />
+
+
+
+                                        <div>
+
+                                            <strong>
+
+                                                Manual time tracking
+
+                                            </strong>
+
+
+
+                                            <p>
+
+                                                You will be able to add
+
+                                                sessions manually inside
+
+                                                each journal entry.
+
+                                            </p>
+
+                                        </div>
+
+                                    </div>
+
+                                )}
+
+
+
+                            <div className="jv-field">
+
+                                <label>
+
+                                    GITHUB REPOSITORY
+
+                                </label>
+
+
+
+                                <div className="jv-select-wrapper">
+
+                                    <select
+
+                                        value={
+
+                                            githubRepo
+
+                                        }
+
+                                        onChange={(event) =>
+
+                                            setGithubRepo(
+
+                                                event.target.value
+
+                                            )
+
+                                        }
+
+                                        disabled={
+
+                                            creating ||
+
+                                            githubRepositoriesLoading
+
+                                        }
+
+                                    >
+
+                                        <option value="">
+
+                                            {githubRepositoriesLoading
+
+                                                ? "Loading repositories..."
+
+                                                : "Select repository"}
+
+                                        </option>
+
+
+
+                                        {!githubRepositoriesLoading &&
+
+                                            githubRepositories.map(
+
+                                                (
+
+                                                    repository
+
+                                                ) => (
+
+                                                    <option
+
+                                                        key={
+
+                                                            repository.id
+
+                                                        }
+
+                                                        value={
+
+                                                            repository.full_name
+
+                                                        }
+
+                                                    >
+
+                                                        {
+
+                                                            repository.full_name
+
+                                                        }
+
+                                                    </option>
+
+                                                )
+
+                                            )}
+
+                                    </select>
+
+
+
+                                    <ChevronDown
+
+                                        size={15}
+
+                                    />
+
+                                </div>
+
+
+
+                                {githubRepositoriesLoading && (
+
+                                    <p className="jv-field-help jv-loading-inline">
+
+                                        <LoaderCircle
+
+                                            size={12}
+
+                                            className="jv-spin"
+
+                                        />
+
+
+
+                                        Loading your GitHub
+
+                                        repositories...
+
+                                    </p>
+
+                                )}
+
+
+
+                                {githubRepositoriesError && (
+
+                                    <p className="jv-field-error">
+
+                                        {
+
+                                            githubRepositoriesError
+
+                                        }
+
+                                    </p>
+
+                                )}
+
+
+
+                                {!githubRepositoriesLoading &&
+
+                                    githubRepositories.length >
+
+                                    0 &&
+
+                                    selectedGithubRepository && (
+
+                                        <p className="jv-field-help">
+
+                                            {selectedGithubRepository.private
+
+                                                ? "Private repository"
+
+                                                : "Public repository"}
+
+                                        </p>
+
+                                    )}
+
+                            </div>
+
+
+
+                            {formError && (
+
+                                <div className="jv-form-error">
+
+                                    {formError}
+
+                                </div>
+
+                            )}
+
                         </div>
-                    </section>
+
+
+
+                        <div className="jv-modal-footer">
+
+                            <button
+
+                                type="button"
+
+                                className="jv-cancel-button"
+
+                                onClick={
+
+                                    closeCreateModal
+
+                                }
+
+                                disabled={creating}
+
+                            >
+
+                                Cancel
+
+                            </button>
+
+
+
+                            <button
+
+                                type="button"
+
+                                className="jv-create-button"
+
+                                onClick={createBook}
+
+                                disabled={creating}
+
+                            >
+
+                                {creating ? (
+
+                                    <>
+
+                                        <LoaderCircle
+
+                                            size={15}
+
+                                            className="jv-spin"
+
+                                        />
+
+
+
+                                        <span>
+
+                                            Creating...
+
+                                        </span>
+
+                                    </>
+
+                                ) : (
+
+                                    <>
+
+                                        <BookOpen
+
+                                            size={15}
+
+                                        />
+
+
+
+                                        <span>
+
+                                            Create Book
+
+                                        </span>
+
+                                    </>
+
+                                )}
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
                 </div>
-            ) : null}
-        </main>
+
+            )}
+
+        </div>
+
     );
+
 }

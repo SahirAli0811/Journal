@@ -1,183 +1,239 @@
-import {
-    NextRequest,
-    NextResponse,
-} from "next/server";
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 import { supabase } from "@/lib/supabase/supabase";
 
-type GitHubRepository = {
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+type GithubRepository = {
     id: number;
     name: string;
     full_name: string;
     html_url: string;
-    description: string | null;
     private: boolean;
+    description: string | null;
+    default_branch: string;
     owner?: {
         login?: string;
     };
 };
 
-export async function GET(
-    request: NextRequest
+function jsonResponse(
+    data: unknown,
+    status = 200
 ) {
+    return NextResponse.json(data, {
+        status,
+        headers: {
+            "Cache-Control":
+                "no-store, no-cache, must-revalidate",
+        },
+    });
+}
+
+export async function GET() {
     try {
+        const cookieStore = cookies();
+
         const userId =
-            request.cookies.get(
+            cookieStore.get(
                 "journal_user_id"
             )?.value;
 
         if (!userId) {
-            return NextResponse.json({
-                error: "Not authenticated",
-            },
-                { status: 401 }
-            )
+            return jsonResponse(
+                {
+                    error: "Not authenticated",
+                    repositories: [],
+                },
+                401
+            );
         }
 
         const { data: user, error } =
             await supabase
                 .from("users")
-                .select("github_access_token, github_connected")
+                .select(
+                    `
+            id,
+            github_access_token,
+            github_connected
+          `
+                )
                 .eq("id", userId)
                 .single();
 
-        if (error || !user) {
+        if (error) {
             console.error(
-                "Github rrpository user lookup error:", error
+                "Supabase GitHub user lookup error:",
+                error
             );
 
-            return NextResponse.json(
+            return jsonResponse(
                 {
-                    error: "User account not found",
+                    error:
+                        "Failed to load your account.",
+                    repositories: [],
                 },
-                { status: 404 }
+                500
             );
         }
 
-        const token = user.github_access_token;
-
-        if (!token) {
-            return NextResponse.json(
+        if (!user) {
+            return jsonResponse(
                 {
-                    error: "Github is not connected",
+                    error:
+                        "User account not found.",
+                    repositories: [],
                 },
-                { status: 400 }
+                404
             );
         }
 
-        const githubResponse = await fetch("https://api.github.com/user/repos?per_page=100&sort=updated&direction=desc&affiliation=owner,collaborator,organization_member",
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept:
-                        "application/vnd.github+json",
-                    "X-Github-Api-Version":
-                        "2022-11-28",
-                    "User-Agent":
-                        "Journal-App",
+        if (!user.github_access_token) {
+            return jsonResponse(
+                {
+                    error:
+                        "GitHub is not connected. Reconnect GitHub from your Profile page.",
+                    repositories: [],
                 },
-                cache: "no-store",
+                400
+            );
+        }
+
+        const githubResponse =
+            await fetch(
+                "https://api.github.com/user/repos?visibility=all&affiliation=owner,collaborator,organization_member&per_page=100&sort=updated&direction=desc",
+                {
+                    method: "GET",
+                    headers: {
+                        Accept:
+                            "application/vnd.github+json",
+
+                        Authorization:
+                            `Bearer ${user.github_access_token}`,
+
+                        "X-GitHub-Api-Version":
+                            "2026-03-10",
+                    },
+
+                    cache: "no-store",
+                }
+            );
+
+        const responseText =
+            await githubResponse.text();
+
+        let githubData: unknown = null;
+
+        if (responseText.trim()) {
+            try {
+                githubData =
+                    JSON.parse(responseText);
+            } catch {
+                githubData = null;
             }
-        );
-
-        const contentType = githubResponse.headers.get("content-type") || "";
+        }
 
         if (!githubResponse.ok) {
-            const text = await githubResponse.text();
+            console.error("GitHub API error:", {
+                    status:
+                        githubResponse.status,
+                    body:
+                        responseText,
+                }
+            );
 
-            console.error("Github repositories API failed:", githubResponse.status, text);
+            const githubMessage =
+                typeof githubData === "object" &&
+                    githubData !== null &&
+                    "message" in githubData &&
+                    typeof (
+                        githubData as {
+                            message?: unknown;
+                        }
+                    ).message === "string"
+                    ? (
+                        githubData as {
+                            message: string;
+                        }
+                    ).message
+                    : null;
 
-            return NextResponse.json(
+            return jsonResponse(
                 {
-                    error: "Github returned an erro while loading repositories.",
-                    details: contentType.includes("aaplication/json")
-                        ? safeGitHubMessage(text)
-                        : text.slice(0, 300),
+                    error:
+                        githubMessage ||
+                        responseText ||
+                        `GitHub returned HTTP ${githubResponse.status}.`,
+                    repositories: [],
                 },
-                { status: githubResponse.status }
+                githubResponse.status
             );
         }
 
-        if (!contentType.includes("application/json")) {
-            const text = await githubResponse.text();
+        if (!Array.isArray(githubData)) {
+            console.error("Unexpected GitHub repository response:", githubData);
 
-            return NextResponse.json(
+            return jsonResponse(
                 {
-                    error: " Github returned an unexpected response.",
-                    details: text.slice(0, 300),
+                    error:
+                        "GitHub returned an unexpected repository response.",
+                    repositories: [],
                 },
-                { status: 502 }
+                502
             );
         }
+
         const repositories =
-            (await githubResponse.json()) as GitHubRepository[];
-
-        const cleanedRepositories =
-            repositories
-                .filter(
-                    (repository) =>
-                        repository &&
-                        typeof repository.id ===
-                        "number" &&
-                        typeof repository.name ===
-                        "string" &&
-                        typeof repository.full_name ===
-                        "string"
-                )
-                .map((repository) => ({
-                    id: repository.id,
-                    name: repository.name,
+            githubData.map(
+                (repo: GithubRepository) => ({
+                    id: repo.id,
+                    name: repo.name,
                     full_name:
-                        repository.full_name,
+                        repo.full_name,
                     html_url:
-                        repository.html_url,
-                    description:
-                        repository.description,
+                        repo.html_url,
                     private:
-                        Boolean(repository.private),
-                    owner: {
-                        login:
-                            repository.owner
-                                ?.login || "",
-                    },
-                }));
+                        Boolean(repo.private),
+                    description:
+                        repo.description ??
+                        null,
+                    default_branch:
+                        repo.default_branch ||
+                        "main",
+                })
+            );
 
-        return NextResponse.json({
-            repositories:
-                cleanedRepositories,
+        console.log(`Loaded ${repositories.length} GitHub repositories for user ${userId}`);
+
+        return jsonResponse({
+            repositories,
         });
     } catch (error) {
-        console.error(
-            "GitHub repositories route error:",
-            error
-        );
+        console.error("GitHub repositories route error:", error);
 
-        return NextResponse.json(
+        return jsonResponse(
             {
                 error:
                     error instanceof Error
                         ? error.message
-                        : "Failed to load GitHub repositories",
+                        : "Failed to load GitHub repositories.",
+                repositories: [],
             },
-            {
-                status: 500,
-            }
+            500
         );
     }
 }
 
-function safeGitHubMessage(
-    text: string
-) {
-    try {
-        const parsed = JSON.parse(text);
-
-        return (
-            parsed?.message ||
-            "GitHub API request failed."
-        );
-    } catch {
-        return text.slice(0, 300);
-
-    }
+export async function POST() {
+    return jsonResponse(
+        {
+            error:
+                "POST is not supported for this endpoint. Use GET.",
+            repositories: [],
+        },
+        405
+    );
 }

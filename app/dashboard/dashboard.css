@@ -1,20 +1,4 @@
-/* =========================================================
-   JOURNAL DASHBOARD
-   Scoped ONLY to .jd-dashboard
 
-   Colour scheme:
-   Orange       #FF6B18
-   Deep Orange  #F45113
-   Warm Yellow  #FFD928
-   Lime         #C7D600
-   Bright Lime  #DCEB20
-   Dark Brown   #352A23
-   Warm White   #FFF8E8
-   ========================================================= */
-/* =========================================================
-   JOURNAL DASHBOARD
-   app/dashboard/dashboard.css
-   ========================================================= */
 
 .jd-dashboard {
     min-height: 100vh;
@@ -28,9 +12,6 @@
     font-family: "Baloo 2", sans-serif;
 }
 
-/* =========================================================
-   SIDEBAR
-   ========================================================= */
 
 .jd-sidebar {
     position: fixed;
@@ -51,7 +32,6 @@
     z-index: 20;
 }
 
-/* BRAND */
 
 .jd-brand {
     display: flex;
@@ -83,7 +63,6 @@
     color: #ff6b18;
 }
 
-/* NAVIGATION */
 
 .jd-nav {
     display: flex;
@@ -135,15 +114,10 @@
     color: #ff6b18;
 }
 
-/* SPACER */
 
 .jd-sidebar-spacer {
     flex: 1;
 }
-
-/* =========================================================
-   PROFILE
-   ========================================================= */
 
 .jd-profile {
     display: flex;
@@ -253,7 +227,6 @@
     text-overflow: ellipsis;
 }
 
-/* LOGOUT */
 
 .jd-logout {
     display: flex;
@@ -277,10 +250,6 @@
     color: #ff6b18;
 }
 
-/* =========================================================
-   MAIN CONTENT
-   ========================================================= */
-
 .jd-main {
     width: calc(100% - 184px);
     min-height: 100vh;
@@ -290,9 +259,6 @@
     padding: 23px 30px 38px;
 }
 
-/* =========================================================
-   HEADER
-   ========================================================= */
 
 .jd-header {
     display: flex;
@@ -344,7 +310,6 @@
     line-height: 1.45;
 }
 
-/* REFRESH */
 
 .jd-refresh {
     flex-shrink: 0;
@@ -403,10 +368,6 @@
     }
 }
 
-/* =========================================================
-   ERROR
-   ========================================================= */
-
 .jd-error {
     display: flex;
     align-items: center;
@@ -451,10 +412,6 @@
 
     cursor: pointer;
 }
-
-/* =========================================================
-   FILTERS
-   ========================================================= */
 
 .jd-filters {
     display: grid;
@@ -567,9 +524,6 @@
     color: #74665e;
 }
 
-/* =========================================================
-   STAT CARDS
-   ========================================================= */
 
 .jd-stats {
     display: grid;
@@ -659,10 +613,6 @@
     line-height: 1.2;
 }
 
-/* =========================================================
-   DATA GRID
-   ========================================================= */
-
 .jd-data-grid {
     display: grid;
 
@@ -684,10 +634,6 @@
 
     background: #1d1714;
 }
-
-/* =========================================================
-   PANEL HEADER
-   ========================================================= */
 
 .jd-panel-header {
     display: flex;
@@ -730,8 +676,6 @@
     font-size: 7px;
 }
 
-/* CODE ICON */
-
 .jd-panel-code {
     width: 25px;
     height: 25px;
@@ -747,9 +691,6 @@
     color: #ff6b18;
 }
 
-/* =========================================================
-   PROJECT DURATIONS
-   ========================================================= */
 
 .jd-project-list {
     display: flex;
@@ -817,10 +758,6 @@
 
     white-space: nowrap;
 }
-
-/* =========================================================
-   LANGUAGES
-   ========================================================= */
 
 .jd-language-list {
     display: flex;
@@ -891,9 +828,6 @@
     white-space: nowrap;
 }
 
-/* =========================================================
-   EMPTY STATE
-   ========================================================= */
 
 .jd-empty {
     padding: 25px 6px;
@@ -905,9 +839,6 @@
     text-align: center;
 }
 
-/* =========================================================
-   ACCOUNT STRIP
-   ========================================================= */
 
 .jd-account-strip {
     min-width: 0;
@@ -1004,9 +935,6 @@
     text-decoration: underline;
 }
 
-/* =========================================================
-   TABLET
-   ========================================================= */
 
 @media (max-width: 1050px) {
     .jd-sidebar {
@@ -1027,9 +955,6 @@
     }
 }
 
-/* =========================================================
-   SMALL TABLET
-   ========================================================= */
 
 @media (max-width: 800px) {
     .jd-stats {
@@ -1050,9 +975,6 @@
     }
 }
 
-/* =========================================================
-   MOBILE
-   ========================================================= */
 
 @media (max-width: 620px) {
     .jd-dashboard {
@@ -1143,9 +1065,6 @@
     }
 }
 
-/* =========================================================
-   VERY SMALL SCREENS
-   ========================================================= */
 
 @media (max-width: 400px) {
     .jd-nav-item span {
@@ -1172,20 +1091,12 @@
     }
 }
 
-/* =========================================================
-   LIGHT THEME
-   Shared with Profile page
-   ========================================================= */
 
 html[data-journal-theme="light"],
 html[data-journal-theme="light"] body {
     background: #fff8ee;
 }
 
-
-/* =========================================================
-   DASHBOARD ROOT
-   ========================================================= */
 
 html[data-journal-theme="light"] .jd-dashboard {
     --jd-bg: #fff8ee;
@@ -1212,17 +1123,11 @@ html[data-journal-theme="light"] .jd-dashboard {
 }
 
 
-/* =========================================================
-   SIDEBAR
-   ========================================================= */
-
 html[data-journal-theme="light"] .jd-sidebar {
     background: #fff3e3;
     border-right-color: rgba(53, 42, 35, 0.09);
 }
 
-
-/* BRAND */
 
 html[data-journal-theme="light"] .jd-brand {
     color: #352a23;
@@ -1234,8 +1139,6 @@ html[data-journal-theme="light"] .jd-brand-icon {
     border-color: rgba(53, 42, 35, 0.08);
 }
 
-
-/* NAV */
 
 html[data-journal-theme="light"] .jd-nav-item {
     color: #968578;
@@ -1255,15 +1158,9 @@ html[data-journal-theme="light"] .jd-nav-active svg {
     color: #f45113;
 }
 
-
-/* SIDEBAR BOTTOM */
-
 html[data-journal-theme="light"] .jd-sidebar-bottom {
     border-top-color: rgba(53, 42, 35, 0.07);
 }
-
-
-/* PROFILE */
 
 html[data-journal-theme="light"] .jd-profile {
     color: #352a23;
@@ -1300,18 +1197,9 @@ html[data-journal-theme="light"] .jd-logout:hover {
 }
 
 
-/* =========================================================
-   MAIN
-   ========================================================= */
-
 html[data-journal-theme="light"] .jd-main {
     background: #fff8ee;
 }
-
-
-/* =========================================================
-   HEADER
-   ========================================================= */
 
 html[data-journal-theme="light"] .jd-eyebrow {
     color: #f45113;
@@ -1330,10 +1218,6 @@ html[data-journal-theme="light"] .jd-description {
 }
 
 
-/* =========================================================
-   REFRESH
-   ========================================================= */
-
 html[data-journal-theme="light"] .jd-refresh {
     background: rgba(244, 81, 19, 0.055);
     border-color: rgba(244, 81, 19, 0.28);
@@ -1345,10 +1229,6 @@ html[data-journal-theme="light"] .jd-refresh:hover {
     border-color: rgba(244, 81, 19, 0.45);
 }
 
-
-/* =========================================================
-   FILTERS
-   ========================================================= */
 
 html[data-journal-theme="light"] .jd-filter-label {
     color: #968578;
@@ -1387,10 +1267,6 @@ html[data-journal-theme="light"] .jd-filter-control select option {
 }
 
 
-/* =========================================================
-   STATS
-   ========================================================= */
-
 html[data-journal-theme="light"] .jd-stat-card {
     background: #fffaf3;
     border-color: rgba(53, 42, 35, 0.12);
@@ -1416,11 +1292,6 @@ html[data-journal-theme="light"] .jd-stat-card small {
     color: #968578;
 }
 
-
-/* =========================================================
-   PANELS
-   ========================================================= */
-
 html[data-journal-theme="light"] .jd-panel {
     background: #fffaf3;
     border-color: rgba(53, 42, 35, 0.12);
@@ -1442,11 +1313,6 @@ html[data-journal-theme="light"] .jd-panel-code {
     color: #f45113;
 }
 
-
-/* =========================================================
-   PROJECT DURATIONS
-   ========================================================= */
-
 html[data-journal-theme="light"] .jd-project-name {
     color: #66584e;
 }
@@ -1462,11 +1328,6 @@ html[data-journal-theme="light"] .jd-bar-fill {
 html[data-journal-theme="light"] .jd-project-time {
     color: #66584e;
 }
-
-
-/* =========================================================
-   LANGUAGE BREAKDOWN
-   ========================================================= */
 
 html[data-journal-theme="light"] .jd-language-row>span {
     color: #66584e;
@@ -1484,19 +1345,9 @@ html[data-journal-theme="light"] .jd-language-row strong {
     color: #968578;
 }
 
-
-/* =========================================================
-   EMPTY STATE
-   ========================================================= */
-
 html[data-journal-theme="light"] .jd-empty {
     color: #968578;
 }
-
-
-/* =========================================================
-   ERROR
-   ========================================================= */
 
 html[data-journal-theme="light"] .jd-error {
     background: rgba(216, 76, 61, 0.055);
@@ -1513,11 +1364,6 @@ html[data-journal-theme="light"] .jd-error button {
     color: #d84c3d;
     border-color: rgba(216, 76, 61, 0.16);
 }
-
-
-/* =========================================================
-   ACCOUNT STRIP
-   ========================================================= */
 
 html[data-journal-theme="light"] .jd-account-strip {
     background: #fffaf3;
@@ -1542,11 +1388,6 @@ html[data-journal-theme="light"] .jd-account-strip a {
     color: #f45113;
 }
 
-
-/* =========================================================
-   PROJECT/LANGUAGE LIST BORDERS
-   ========================================================= */
-
 html[data-journal-theme="light"] .jd-project-row {
     border-color: rgba(53, 42, 35, 0.055);
 }
@@ -1556,18 +1397,9 @@ html[data-journal-theme="light"] .jd-language-row {
 }
 
 
-/* =========================================================
-   SCROLLBAR
-   ========================================================= */
-
 html[data-journal-theme="light"] .jd-dashboard {
     scrollbar-color: #d8c8b8 #fff3e3;
 }
-
-
-/* =========================================================
-   IMPORTANT: COVER HARD-CODED DARK COLORS
-   ========================================================= */
 
 html[data-journal-theme="light"] .jd-project-panel,
 html[data-journal-theme="light"] .jd-language-panel {

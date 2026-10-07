@@ -230,12 +230,6 @@ export default function DashboardPage() {
   const [language, setLanguage] =
     useState("all");
 
-  /*
-   * ---------------------------------------------------------
-   * SHARED THEME
-   * Reads the same theme selected on the Profile page.
-   * ---------------------------------------------------------
-   */
   useEffect(() => {
     const savedTheme =
       window.localStorage.getItem(
@@ -441,8 +435,6 @@ export default function DashboardPage() {
 
   return (
     <div className="jd-dashboard">
-      {/* SIDEBAR */}
-
       <aside className="jd-sidebar">
         <div className="jd-brand">
           <div className="jd-brand-icon">
@@ -519,8 +511,6 @@ export default function DashboardPage() {
         </a>
       </aside>
 
-      {/* MAIN */}
-
       <main className="jd-main">
         <header className="jd-header">
           <div>
@@ -575,8 +565,6 @@ export default function DashboardPage() {
             </button>
           </div>
         )}
-
-        {/* FILTERS */}
 
         <section className="jd-filters">
           <FilterSelect
@@ -633,8 +621,6 @@ export default function DashboardPage() {
           />
         </section>
 
-        {/* STAT CARDS */}
-
         <section className="jd-stats">
           <StatCard
             label="TOTAL TIME"
@@ -688,11 +674,7 @@ export default function DashboardPage() {
           />
         </section>
 
-        {/* DATA */}
-
         <section className="jd-data-grid">
-          {/* PROJECTS */}
-
           <article className="jd-panel jd-project-panel">
             <div className="jd-panel-header">
               <div>
@@ -760,8 +742,6 @@ export default function DashboardPage() {
             </div>
           </article>
 
-          {/* LANGUAGES */}
-
           <article className="jd-panel jd-language-panel">
             <div className="jd-panel-header">
               <div>
@@ -827,8 +807,6 @@ export default function DashboardPage() {
             </div>
           </article>
         </section>
-
-        {/* PROFILE INFO */}
 
         <section className="jd-account-strip">
           <div className="jd-account-avatar">

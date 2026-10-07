@@ -18,7 +18,6 @@ export async function GET() {
     redirect_uri: redirectUri,
     response_type: "code",
 
-    // Only request what we need for the profile.
     scope: "openid profile email name slack_id",
   });
 
