@@ -44,3 +44,29 @@ jchjsd
 ![Journal image 2](images/1791441730272-2-Screenshot-2026-10-08-073116.png)
 
 ---
+
+# 2026-10-08
+
+## Hello
+
+**Time:** 12m
+
+**bold***italic*~~text~~
+
+# 
+## 
+> 
+- [ ] 
+`code`
+
+```text
+code here
+```
+[link](https://)
+
+### Images
+
+![Journal image 1](images/1791478982180-1-Screenshot-2026-10-08-064119.png)
+![Journal image 2](images/1791478982180-2-Screenshot-2026-10-07-100807.png)
+
+---
