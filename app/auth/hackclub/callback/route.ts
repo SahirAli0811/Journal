@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     const clientId = process.env.HACKCLUB_CLIENT_ID;
     const clientSecret = process.env.HACKCLUB_CLIENT_SECRET;
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
 
     if (!clientId || !clientSecret || !siteUrl) {
       return NextResponse.json(
