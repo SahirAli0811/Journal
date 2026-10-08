@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     }
 
     const redirectUri =
-      `${siteUrl}/auth/hackatime/callback`;
+      `${siteUrl.replace(/\/$/, "")}/auth/hackatime/callback`;
 
     const tokenResponse = await fetch(
       "https://hackatime.hackclub.com/oauth/token",

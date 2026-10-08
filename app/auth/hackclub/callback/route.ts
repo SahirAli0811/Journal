@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const redirectUri = `${siteUrl}/auth/hackclub/callback`;
+    const redirectUri = `${siteUrl.replace(/\/$/, "")}/auth/hackclub/callback`;
 
     const tokenResponse = await fetch(
       "https://auth.hackclub.com/oauth/token",

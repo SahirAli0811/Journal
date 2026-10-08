@@ -11,7 +11,7 @@ export async function GET() {
     );
   }
 
-  const redirectUri = `${siteUrl}/auth/hackatime/callback`;
+  const redirectUri = `${siteUrl.replace(/\/$/, "")}/auth/hackatime/callback`;
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri,

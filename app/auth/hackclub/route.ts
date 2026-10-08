@@ -11,7 +11,7 @@ export async function GET() {
     );
   }
 
-  const redirectUri = `${siteUrl}/auth/hackclub/callback`;
+  const redirectUri = `${siteUrl.replace(/\/$/, "")}/auth/hackclub/callback`;
 
   const params = new URLSearchParams({
     client_id: clientId,
