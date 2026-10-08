@@ -33,24 +33,32 @@ journal/
 └── images/
     ├── image-1.png
     └── image-2.png
-
+```
 You can review the Pull Request and merge it into main when you are ready.
 This keeps journal publishing separate from your normal development work and helps prevent Journal changes from accidentally interfering with an older local copy of your repository.
+
 Working on your repository after a Journal update
 After you merge a Journal Pull Request into main, the remote repository has changed.
+
 If you are working on the repository from your computer, update your local main before pushing new changes:
+```
 git checkout main
 git pull origin main
+```
 
 This keeps your local repository up to date with the Journal changes.
 Do not force-push an old local main over the remote repository.
 Journal files
+```
 Published journal content is stored inside the connected GitHub repository:
+
 journal/
 ├── journal.md
 └── images/
+```
 
 journal.md contains your journal entries in Markdown, while the images folder contains the images uploaded with your entries.
+```
 Development
 Install dependencies:
 npm install
@@ -106,9 +114,10 @@ journal/
 ├── public/
 ├── package.json
 └── README.md
-
-Git workflow
+```
+# Git workflow
 For normal development, work on a separate branch instead of changing main directly.
+```
 A simple workflow is:
 git checkout main
 git pull origin main
@@ -121,7 +130,10 @@ git commit -m "Describe my changes"
 git push -u origin my-feature
 
 Then create a Pull Request and merge it into main when the changes are ready.
-Security
-Keep GitHub tokens, Hackatime tokens, Supabase secret keys, and OAuth secrets private.
-Never commit secrets to the repository and never force-push over changes that you have not pulled locally.
 ```
+# Security
+###
+Keep GitHub tokens, Hackatime tokens, Supabase secret keys, and OAuth secrets private.
+
+Never commit secrets to the repository and never force-push over changes that you have not pulled locally.
+###
