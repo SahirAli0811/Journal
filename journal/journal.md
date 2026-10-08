@@ -70,3 +70,19 @@ code here
 ![Journal image 2](images/1791478982180-2-Screenshot-2026-10-07-100807.png)
 
 ---
+
+# 2026-10-08
+
+## hello
+
+**Time:** 3h 25m
+
+**bold**
+*italic*
+
+### Images
+
+![Journal image 1](images/1791479102447-1-Screenshot-2026-10-08-073116.png)
+![Journal image 2](images/1791479102447-2-Screenshot-2026-10-08-064119.png)
+
+---
