@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/supabase";
+import { getSiteUrl } from "@/lib/url";
 
 export async function GET(request: NextRequest) {
   try {
     const code = request.nextUrl.searchParams.get("code");
     const oauthError = request.nextUrl.searchParams.get("error");
+    const state = request.nextUrl.searchParams.get("state");
 
     if (oauthError) {
       return NextResponse.json(
@@ -25,24 +27,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-
-    const journalUserId = request.cookies.get(
-      "journal_user_id"
-    )?.value;
-
-    if (!journalUserId) {
-      return NextResponse.json(
-        {
-          error:
-            "No Journal user session found. Please start signup again.",
-        },
-        { status: 400 }
-      );
-    }
+    // Retrieve userId from state parameter or cookie
+    let journalUserId = state || request.cookies.get("journal_user_id")?.value;
 
     const clientId = process.env.HACKATIME_CLIENT_ID;
     const clientSecret = process.env.HACKATIME_CLIENT_SECRET;
-    const siteUrl = process.env.SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+    const siteUrl = getSiteUrl(request);
 
     if (!clientId || !clientSecret || !siteUrl) {
       return NextResponse.json(
@@ -53,8 +43,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const redirectUri =
-      `${siteUrl.replace(/\/$/, "")}/auth/hackatime/callback`;
+    const redirectUri = `${siteUrl}/auth/hackatime/callback`;
 
     const tokenResponse = await fetch(
       "https://hackatime.hackclub.com/oauth/token",
@@ -76,10 +65,7 @@ export async function GET(request: NextRequest) {
     const tokenData = await tokenResponse.json();
 
     if (!tokenResponse.ok) {
-      console.error(
-        "Hackatime token error:",
-        tokenData
-      );
+      console.error("Hackatime token error:", tokenData);
 
       return NextResponse.json(
         {
@@ -95,8 +81,7 @@ export async function GET(request: NextRequest) {
     if (!accessToken) {
       return NextResponse.json(
         {
-          error:
-            "Hackatime did not return an access token",
+          error: "Hackatime did not return an access token",
         },
         { status: 500 }
       );
@@ -115,10 +100,7 @@ export async function GET(request: NextRequest) {
     const hackatimeUser = await userResponse.json();
 
     if (!userResponse.ok) {
-      console.error(
-        "Hackatime user error:",
-        hackatimeUser
-      );
+      console.error("Hackatime user error:", hackatimeUser);
 
       return NextResponse.json(
         {
@@ -129,21 +111,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log(
-      "Hackatime user:",
-      hackatimeUser
-    );
-
     const hackatimeId =
       hackatimeUser.id ??
       hackatimeUser.user_id ??
+      hackatimeUser.data?.id ??
       hackatimeUser.user?.id;
 
     if (!hackatimeId) {
       return NextResponse.json(
         {
-          error:
-            "Hackatime profile did not contain a user ID",
+          error: "Hackatime profile did not contain a user ID",
           profile: hackatimeUser,
         },
         { status: 400 }
@@ -152,30 +129,48 @@ export async function GET(request: NextRequest) {
 
     const hackatimeEmail =
       hackatimeUser.email ??
+      hackatimeUser.data?.email ??
       hackatimeUser.user?.email ??
       null;
 
-
-    const { data: user, error: updateError } =
-      await supabase
+    // Fallback: If session cookie was lost, attempt match by email
+    if (!journalUserId && hackatimeEmail) {
+      const { data: userByEmail } = await supabase
         .from("users")
-        .update({
-          hackatime_id: String(hackatimeId),
-          hackatime_email: hackatimeEmail,
-          hackatime_user_id: String(hackatimeId),
-          hackatime_access_token: accessToken,
-          hackatime_connected: true,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", journalUserId)
-        .select()
-        .single();
+        .select("id")
+        .eq("hackclub_email", hackatimeEmail)
+        .maybeSingle();
+
+      if (userByEmail) {
+        journalUserId = userByEmail.id;
+      }
+    }
+
+    if (!journalUserId) {
+      return NextResponse.json(
+        {
+          error: "No Journal user session found. Please start signup again.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const { data: user, error: updateError } = await supabase
+      .from("users")
+      .update({
+        hackatime_id: String(hackatimeId),
+        hackatime_email: hackatimeEmail,
+        hackatime_user_id: String(hackatimeId),
+        hackatime_access_token: accessToken,
+        hackatime_connected: true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", journalUserId)
+      .select()
+      .single();
 
     if (updateError) {
-      console.error(
-        "Supabase Hackatime update error:",
-        updateError
-      );
+      console.error("Supabase Hackatime update error:", updateError);
 
       return NextResponse.json(
         {
@@ -186,48 +181,32 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log(
-      "Hackatime connected to Journal user:",
-      user.id
-    );
+    // Redirect to GitHub step forwarding userId so session persists
+    const nextUrl = new URL("/auth/github", siteUrl);
+    nextUrl.searchParams.set("userId", user.id);
 
+    const response = NextResponse.redirect(nextUrl);
+    const isSecure = siteUrl.startsWith("https://");
 
-    const response = NextResponse.redirect(
-      new URL("/auth/github", request.url)
-    );
+    response.cookies.set("journal_user_id", String(user.id), {
+      httpOnly: true,
+      secure: isSecure,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+    });
 
-    response.cookies.set(
-      "journal_user_id",
-      String(user.id),
-      {
-        httpOnly: true,
-        secure:
-          process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 30,
-      }
-    );
-
-    response.cookies.set(
-      "hackatime_access_token",
-      accessToken,
-      {
-        httpOnly: true,
-        secure:
-          process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 30,
-      }
-    );
+    response.cookies.set("hackatime_access_token", accessToken, {
+      httpOnly: true,
+      secure: isSecure,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+    });
 
     return response;
   } catch (error) {
-    console.error(
-      "Hackatime callback error:",
-      error
-    );
+    console.error("Hackatime callback error:", error);
 
     return NextResponse.json(
       {

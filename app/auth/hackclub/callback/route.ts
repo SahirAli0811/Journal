@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/supabase";
+import { getSiteUrl } from "@/lib/url";
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
 
     const clientId = process.env.HACKCLUB_CLIENT_ID;
     const clientSecret = process.env.HACKCLUB_CLIENT_SECRET;
-    const siteUrl = process.env.SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+    const siteUrl = getSiteUrl(request);
 
     if (!clientId || !clientSecret || !siteUrl) {
       return NextResponse.json(
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const redirectUri = `${siteUrl.replace(/\/$/, "")}/auth/hackclub/callback`;
+    const redirectUri = `${siteUrl}/auth/hackclub/callback`;
 
     const tokenResponse = await fetch(
       "https://auth.hackclub.com/oauth/token",
@@ -106,11 +107,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log(
-      "Hack Club profile:",
-      JSON.stringify(profile, null, 2)
-    );
-
     const hackclubId = profile.sub;
 
     if (!hackclubId) {
@@ -148,10 +144,7 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (saveError) {
-      console.error(
-        "Supabase Hack Club save error:",
-        saveError
-      );
+      console.error("Supabase Hack Club save error:", saveError);
 
       return NextResponse.json(
         {
@@ -162,35 +155,29 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log("Hack Club user saved:", user);
+    // Redirect to Hackatime step, forwarding userId in query param so session is never lost across redirects
+    const nextUrl = new URL("/auth/hackatime", siteUrl);
+    nextUrl.searchParams.set("userId", user.id);
 
-    const response = NextResponse.redirect(
-      new URL("/auth/hackatime", request.url)
-    );
+    const response = NextResponse.redirect(nextUrl);
 
-    response.cookies.set(
-      "journal_user_id",
-      String(user.id),
-      {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 30,
-      }
-    );
+    const isSecure = siteUrl.startsWith("https://");
 
-    response.cookies.set(
-      "hackclub_access_token",
-      accessToken,
-      {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 30,
-      }
-    );
+    response.cookies.set("journal_user_id", String(user.id), {
+      httpOnly: true,
+      secure: isSecure,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+    });
+
+    response.cookies.set("hackclub_access_token", accessToken, {
+      httpOnly: true,
+      secure: isSecure,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+    });
 
     return response;
   } catch (error) {

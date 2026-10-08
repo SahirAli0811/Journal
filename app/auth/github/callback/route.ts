@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/supabase";
+import { getSiteUrl } from "@/lib/url";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -64,20 +65,16 @@ export async function GET(
       );
     }
 
-    const journalUserId =
+    const state =
+      request.nextUrl.searchParams.get(
+        "state"
+      );
+
+    let journalUserId =
+      state ||
       request.cookies.get(
         "journal_user_id"
       )?.value;
-
-    if (!journalUserId) {
-      return NextResponse.json(
-        {
-          error:
-            "No Journal user session found. Please start signup again.",
-        },
-        { status: 400 }
-      );
-    }
 
     const clientId =
       process.env.GITHUB_CLIENT_ID;
@@ -85,8 +82,7 @@ export async function GET(
     const clientSecret =
       process.env.GITHUB_CLIENT_SECRET;
 
-    const siteUrl =
-      process.env.SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+    const siteUrl = getSiteUrl(request);
 
     if (
       !clientId ||
@@ -107,7 +103,7 @@ export async function GET(
     }
 
     const redirectUri =
-      `${siteUrl.replace(/\/$/, "")}/auth/github/callback`;
+      `${siteUrl}/auth/github/callback`;
 
     const tokenResponse =
       await fetch(

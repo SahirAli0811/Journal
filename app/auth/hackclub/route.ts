@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { getSiteUrl } from "@/lib/url";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const clientId = process.env.HACKCLUB_CLIENT_ID;
-  const siteUrl = process.env.SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+  const siteUrl = getSiteUrl(request);
 
   if (!clientId || !siteUrl) {
     return NextResponse.json(
@@ -11,13 +12,12 @@ export async function GET() {
     );
   }
 
-  const redirectUri = `${siteUrl.replace(/\/$/, "")}/auth/hackclub/callback`;
+  const redirectUri = `${siteUrl}/auth/hackclub/callback`;
 
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri,
     response_type: "code",
-
     scope: "openid profile email name slack_id",
   });
 
