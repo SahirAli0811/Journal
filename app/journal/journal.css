@@ -259,30 +259,15 @@
         box-shadow 0.18s ease;
 }
 
-
-
 .jv-new-button:hover {
-
     background: #f45113;
-
-
-
     transform: translateY(-1px);
-
-
-
     box-shadow:
-
         0 11px 27px rgba(255, 107, 24, 0.21);
-
 }
 
-
-
 .jv-new-button:active {
-
     transform: translateY(0);
-
 }
 
 
