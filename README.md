@@ -4,6 +4,7 @@ Journal is a Hack Club project made for people who love building things.
 
 It helps you keep a record of the projects you work on, the time you spend coding, what you learned, and the moments you want to remember. Journal connects with Hack Club, GitHub, and Hackatime so your development journey can stay connected to the projects you are already working on.
 
+![logo](public/images/logo-bg.png)
 ## Features
 
 - Connect your Hack Club account
