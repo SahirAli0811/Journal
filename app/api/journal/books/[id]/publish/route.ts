@@ -8,7 +8,12 @@ export const dynamic = "force-dynamic";
 const GITHUB_API = "https://api.github.com";
 const GITHUB_API_VERSION = "2026-03-10";
 
-function jsonResponse(data: unknown, status = 200) {
+const JOURNAL_BRANCH = "journal";
+
+function jsonResponse(
+  data: unknown,
+  status = 200
+) {
   return NextResponse.json(data, {
     status,
     headers: {
@@ -62,8 +67,10 @@ type GithubRepositoryResponse = {
   name?: string;
   full_name?: string;
   private?: boolean;
-  default_branch?: string;
   visibility?: string;
+
+  default_branch?: string;
+
   permissions?: {
     admin?: boolean;
     maintain?: boolean;
@@ -71,23 +78,54 @@ type GithubRepositoryResponse = {
     triage?: boolean;
     pull?: boolean;
   };
+
   message?: string;
   documentation_url?: string;
+};
+
+type GithubRefResponse = {
+  ref?: string;
+  node_id?: string;
+  url?: string;
+  object?: {
+    sha?: string;
+    type?: string;
+    url?: string;
+  };
 };
 
 function githubHeaders(token: string) {
   return {
     Accept: "application/vnd.github+json",
     Authorization: `Bearer ${token}`,
-    "X-GitHub-Api-Version": GITHUB_API_VERSION,
+    "X-GitHub-Api-Version":
+      GITHUB_API_VERSION,
     "Content-Type": "application/json",
   };
+}
+
+async function githubRequest(
+  token: string,
+  url: string,
+  init?: RequestInit
+) {
+  return fetch(url, {
+    ...init,
+    headers: {
+      ...githubHeaders(token),
+      ...(init?.headers || {}),
+    },
+    cache: "no-store",
+  });
 }
 
 function safeFileName(name: string) {
   const cleaned = name
     .normalize("NFKD")
-    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(
+      /[^a-zA-Z0-9._-]+/g,
+      "-"
+    )
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
 
@@ -97,7 +135,9 @@ function safeFileName(name: string) {
 function encodeRepoPath(path: string) {
   return path
     .split("/")
-    .map((part) => encodeURIComponent(part))
+    .map((part) =>
+      encodeURIComponent(part)
+    )
     .join("/");
 }
 
@@ -105,8 +145,14 @@ function parseRepo(value: string) {
   const cleaned = value
     .trim()
     .replace(/^https?:\/\//, "")
-    .replace(/^www\.github\.com\//, "")
-    .replace(/^github\.com\//, "")
+    .replace(
+      /^www\.github\.com\//,
+      ""
+    )
+    .replace(
+      /^github\.com\//,
+      ""
+    )
     .replace(/\.git$/, "")
     .replace(/^\/+|\/+$/g, "");
 
@@ -130,7 +176,9 @@ async function parsePublishRequest(
   request: Request
 ): Promise<PublishInput> {
   const contentType =
-    request.headers.get("content-type") || "";
+    request.headers.get(
+      "content-type"
+    ) || "";
 
   if (
     contentType.includes(
@@ -156,7 +204,8 @@ async function parsePublishRequest(
       form.get("sessions") || "[]"
     );
 
-    let sessions: ManualSession[] = [];
+    let sessions: ManualSession[] =
+      [];
 
     try {
       const parsed =
@@ -218,34 +267,23 @@ async function parsePublishRequest(
     date: String(
       body.date || ""
     ).trim(),
+
     title: String(
       body.title || ""
     ).trim(),
+
     content: String(
       body.content || ""
     ),
+
     sessions: Array.isArray(
       body.sessions
     )
       ? (body.sessions as ManualSession[])
       : [],
+
     imageFiles: [],
   };
-}
-
-async function githubRequest(
-  token: string,
-  url: string,
-  init?: RequestInit
-) {
-  return fetch(url, {
-    ...init,
-    headers: {
-      ...githubHeaders(token),
-      ...(init?.headers || {}),
-    },
-    cache: "no-store",
-  });
 }
 
 async function getGithubUser(
@@ -289,6 +327,7 @@ async function getGithubUser(
 
   return {
     login: data?.login || "",
+
     scopes: scopes
       .split(",")
       .map((scope) => scope.trim())
@@ -341,6 +380,232 @@ async function getRepository(
   }
 
   return data;
+}
+
+async function getBranchRef(
+  token: string,
+  owner: string,
+  repo: string,
+  branch: string
+): Promise<GithubRefResponse | null> {
+  const response =
+    await githubRequest(
+      token,
+      `${GITHUB_API}/repos/${encodeURIComponent(
+        owner
+      )}/${encodeURIComponent(
+        repo
+      )}/git/ref/heads/${encodeURIComponent(
+        branch
+      )}`
+    );
+
+  const text =
+    await response.text();
+
+  let data:
+    | GithubRefResponse
+    | null = null;
+
+  if (text.trim()) {
+    try {
+      data =
+        JSON.parse(
+          text
+        ) as GithubRefResponse;
+    } catch {
+      data = null;
+    }
+  }
+
+  if (response.status === 404) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      data &&
+        "message" in data
+        ? String(
+          (
+            data as {
+              message?: string;
+            }
+          ).message || ""
+        )
+        : `GitHub could not read branch "${branch}" (HTTP ${response.status}).`
+    );
+  }
+
+  return data;
+}
+
+async function createBranch(
+  token: string,
+  owner: string,
+  repo: string,
+  branch: string,
+  sourceBranch: string
+) {
+
+  const sourceResponse =
+    await githubRequest(
+      token,
+      `${GITHUB_API}/repos/${encodeURIComponent(
+        owner
+      )}/${encodeURIComponent(
+        repo
+      )}/git/ref/heads/${encodeURIComponent(
+        sourceBranch
+      )}`
+    );
+
+  const sourceText =
+    await sourceResponse.text();
+
+  let sourceData:
+    | GithubRefResponse
+    | null = null;
+
+  if (sourceText.trim()) {
+    try {
+      sourceData =
+        JSON.parse(
+          sourceText
+        ) as GithubRefResponse;
+    } catch {
+      sourceData = null;
+    }
+  }
+
+  if (
+    !sourceResponse.ok ||
+    !sourceData?.object?.sha
+  ) {
+    throw new Error(
+      sourceData
+        ? `GitHub could not read the repository branch "${sourceBranch}".`
+        : `GitHub could not read the repository branch "${sourceBranch}" (HTTP ${sourceResponse.status}).`
+    );
+  }
+
+  const createResponse =
+    await githubRequest(
+      token,
+      `${GITHUB_API}/repos/${encodeURIComponent(
+        owner
+      )}/${encodeURIComponent(
+        repo
+      )}/git/refs`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          ref: `refs/heads/${branch}`,
+          sha: sourceData.object.sha,
+        }),
+      }
+    );
+
+  const createText =
+    await createResponse.text();
+
+  let createData:
+    | GithubRefResponse
+    | {
+      message?: string;
+    }
+    | null = null;
+
+  if (createText.trim()) {
+    try {
+      createData =
+        JSON.parse(createText);
+    } catch {
+      createData = null;
+    }
+  }
+
+  if (
+    createResponse.status ===
+    422
+  ) {
+    const existing =
+      await getBranchRef(
+        token,
+        owner,
+        repo,
+        branch
+      );
+
+    if (existing) {
+      return existing;
+    }
+  }
+
+  if (!createResponse.ok) {
+    throw new Error(
+      createData &&
+        "message" in createData
+        ? String(
+          createData.message ||
+          ""
+        )
+        : `GitHub could not create the "${branch}" branch (HTTP ${createResponse.status}).`
+    );
+  }
+
+  return createData as GithubRefResponse;
+}
+
+async function ensureJournalBranch(
+  token: string,
+  owner: string,
+  repo: string,
+  defaultBranch: string
+) {
+  const existing =
+    await getBranchRef(
+      token,
+      owner,
+      repo,
+      JOURNAL_BRANCH
+    );
+
+  if (existing) {
+    console.log(
+      "Journal branch already exists:",
+      {
+        repository:
+          `${owner}/${repo}`,
+        branch:
+          JOURNAL_BRANCH,
+      }
+    );
+
+    return JOURNAL_BRANCH;
+  }
+
+  await createBranch(
+    token,
+    owner,
+    repo,
+    JOURNAL_BRANCH,
+    defaultBranch
+  );
+
+  console.log(
+    "Created Journal branch:",
+    {
+      repository:
+        `${owner}/${repo}`,
+      branch:
+        JOURNAL_BRANCH,
+      source:
+        defaultBranch,
+    }
+  );
+
+  return JOURNAL_BRANCH;
 }
 
 async function getGithubFile(
@@ -423,10 +688,10 @@ async function putGithubFile(
     unknown
   > = {
     message,
+
     content:
-      content.toString(
-        "base64"
-      ),
+      content.toString("base64"),
+
     branch,
   };
 
@@ -483,34 +748,42 @@ async function putGithubFile(
         owner,
         repo,
         branch,
-        hasSha: Boolean(
-          sha
-        ),
+        hasSha:
+          Boolean(sha),
         response: data,
       }
     );
 
     if (
-      response.status === 404
+      response.status ===
+      401
     ) {
       throw new Error(
-        `GitHub returned 404 while writing ${path}. ` +
-        `The repository exists, but the connected GitHub token does not appear to have write access to ${owner}/${repo}, ` +
-        `or the selected branch "${branch}" is not writable.`
+        "GitHub authentication expired or is invalid. Reconnect GitHub from Profile and try again."
       );
     }
 
     if (
-      response.status === 403
+      response.status ===
+      404
     ) {
       throw new Error(
-        `GitHub denied write access to ${owner}/${repo}. ` +
-        "Your connected GitHub account/token does not have permission to push to this repository."
+        `GitHub returned 404 while writing ${path}. The repository exists, but the connected GitHub token does not appear to have write access to ${owner}/${repo}, or the branch "${branch}" does not exist.`
       );
     }
 
     if (
-      response.status === 409
+      response.status ===
+      403
+    ) {
+      throw new Error(
+        `GitHub denied write access to ${owner}/${repo}. Your connected GitHub account/token does not have permission to push to this repository.`
+      );
+    }
+
+    if (
+      response.status ===
+      409
     ) {
       throw new Error(
         `GitHub reported a conflict while updating ${path}. The repository changed during publishing. Please publish again.`
@@ -530,14 +803,19 @@ function manualSeconds(
   sessions: ManualSession[]
 ) {
   return sessions.reduce(
-    (total, session) => {
-      const hours = Number(
-        session.hours || 0
-      );
+    (
+      total,
+      session
+    ) => {
+      const hours =
+        Number(
+          session.hours || 0
+        );
 
-      const minutes = Number(
-        session.minutes || 0
-      );
+      const minutes =
+        Number(
+          session.minutes || 0
+        );
 
       if (
         !Number.isFinite(
@@ -569,7 +847,8 @@ async function getHackatimeSeconds(
       "https://hackatime.hackclub.com/api/v1/authenticated/projects?include_archived=false",
       {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization:
+            `Bearer ${token}`,
           Accept:
             "application/json",
         },
@@ -687,8 +966,7 @@ function buildEntryMarkdown(
     )}`;
 
   const imageMarkdown =
-    args.imagePaths.length >
-      0
+    args.imagePaths.length > 0
       ? [
         "",
         "### Images",
@@ -747,7 +1025,6 @@ async function getExistingMarkdown(
       markdown: "",
     };
   }
-
   const sha =
     file.sha;
 
@@ -768,7 +1045,9 @@ async function getExistingMarkdown(
             "base64"
             ? "base64"
             : "utf8"
-        ).toString("utf8");
+        ).toString(
+          "utf8"
+        );
     } catch (error) {
       console.error(
         "Failed to decode journal.md:",
@@ -953,7 +1232,7 @@ export async function POST(
         repo.repo
       );
 
-    const branch =
+    const defaultBranch =
       repository.default_branch ||
       "main";
 
@@ -966,9 +1245,11 @@ export async function POST(
         {
           error:
             `You can access ${repo.owner}/${repo.repo}, but you do not have permission to push to it.`,
+
           githubUser:
             githubUser.login ||
             null,
+
           repository:
             `${repo.owner}/${repo.repo}`,
         },
@@ -977,8 +1258,8 @@ export async function POST(
     }
 
     if (
-      githubUser.scopes
-        .length > 0 &&
+      githubUser.scopes.length >
+      0 &&
       repository.private &&
       !githubUser.scopes.includes(
         "repo"
@@ -988,6 +1269,7 @@ export async function POST(
         {
           error:
             "Your GitHub connection does not have the repo permission required to write to this private repository. Reconnect GitHub and grant repository access.",
+
           repository:
             `${repo.owner}/${repo.repo}`,
         },
@@ -996,8 +1278,8 @@ export async function POST(
     }
 
     if (
-      githubUser.scopes
-        .length > 0 &&
+      githubUser.scopes.length >
+      0 &&
       !repository.private &&
       !githubUser.scopes.includes(
         "repo"
@@ -1010,12 +1292,21 @@ export async function POST(
         {
           error:
             "Your GitHub connection does not have permission to write repository contents. Reconnect GitHub and grant repository access.",
+
           repository:
             `${repo.owner}/${repo.repo}`,
         },
         403
       );
     }
+
+    const branch =
+      await ensureJournalBranch(
+        user.github_access_token,
+        repo.owner,
+        repo.repo,
+        defaultBranch
+      );
 
     let timeSeconds = 0;
 
@@ -1116,7 +1407,8 @@ export async function POST(
         cleanName.includes(".")
           ? cleanName
             .split(".")
-            .pop() || "png"
+            .pop() ||
+          "png"
           : "png";
 
       const baseName =
@@ -1152,22 +1444,31 @@ export async function POST(
           Boolean(
             existingJournal
           ),
+
         sha:
           existingJournal.sha,
+
         hasMarkdown:
           Boolean(
             existingJournal.markdown
           ),
+
+        branch,
       }
     );
 
     const entryMarkdown =
       buildEntryMarkdown({
         date: input.date,
-        title: input.title,
+
+        title:
+          input.title,
+
         content:
           input.content,
+
         timeSeconds,
+
         imagePaths,
       });
 
@@ -1178,6 +1479,7 @@ export async function POST(
           ""
         )}\n\n${entryMarkdown}`
         : `# ${book.name}\n\n${entryMarkdown}`;
+
 
     for (const upload of
       imageUploads) {
@@ -1228,19 +1530,27 @@ export async function POST(
     } = await supabase
       .from("journal_entries")
       .insert({
-        book_id: bookId,
+        book_id:
+          bookId,
+
         title:
           input.title || null,
+
         content_markdown:
           input.content,
+
         entry_date:
           input.date,
+
         time_seconds:
           timeSeconds,
+
         sessions:
           input.sessions,
+
         image_paths:
           imagePaths,
+
         github_commit_sha:
           journalResult?.commit
             ?.sha || null,
@@ -1257,21 +1567,29 @@ export async function POST(
       return jsonResponse(
         {
           success: true,
+
           githubPublished:
             true,
+
           databaseSaved:
             false,
+
           warning:
             "Published to GitHub successfully, but the local journal entry could not be saved.",
+
           githubCommitSha:
             journalResult?.commit
               ?.sha || null,
+
           githubJournalPath:
             "journal/journal.md",
+
           githubImagePaths:
             imagePaths,
+
           githubRepository:
             `${repo.owner}/${repo.repo}`,
+
           githubBranch:
             branch,
         },
@@ -1286,13 +1604,13 @@ export async function POST(
       null
     ) {
       const {
-        error:
-        updateError,
+        error: updateError,
       } = await supabase
         .from("journal_books")
         .update({
           last_hackatime_seconds:
             currentHackatimeSeconds,
+
           updated_at:
             new Date().toISOString(),
         })
@@ -1313,8 +1631,7 @@ export async function POST(
       }
     } else {
       const {
-        error:
-        updateError,
+        error: updateError,
       } = await supabase
         .from("journal_books")
         .update({
@@ -1341,22 +1658,32 @@ export async function POST(
     return jsonResponse(
       {
         success: true,
+
         githubPublished:
           true,
+
         databaseSaved:
           true,
+
         entry,
+
         currentHackatimeSeconds,
+
         timeSeconds,
+
         githubCommitSha:
           journalResult?.commit
             ?.sha || null,
+
         githubJournalPath:
           "journal/journal.md",
+
         githubImagePaths:
           imagePaths,
+
         githubRepository:
           `${repo.owner}/${repo.repo}`,
+
         githubBranch:
           branch,
       },
